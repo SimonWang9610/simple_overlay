@@ -119,15 +119,22 @@ void main() {
         ),
       );
 
-      // This should trigger the assert(!isShowing)
+      // 1. Perform the tap
       await tester.tap(find.text('Double Show'));
+
+      // 2. Rebuild the widget to let the exception propagate
       await tester.pump();
 
-      // Verify state is reset
-      expect(manager.hasOverlay, isTrue);
-      expect(manager.isShowing, isTrue);
+      // 3. Capture and verify the exception
+      final dynamic exception = tester.takeException();
 
-      expect(find.byKey(const ValueKey('A')), findsOneWidget);
+      expect(exception, isAssertionError);
+      expect(
+        exception.message,
+        contains(
+          'Overlay is already showing',
+        ), // Validates your specific message
+      );
     });
   });
 }

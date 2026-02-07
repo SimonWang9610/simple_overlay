@@ -18,7 +18,7 @@ class SingleOverlayManager {
     bool maintainState = false,
     bool canSizeOverlay = false,
   }) {
-    assert(!isShowing, 'Overlay is already showing');
+    assert(!hasOverlay, 'Overlay is already showing');
 
     _overlay = OverlayEntry(
       builder: builder,
