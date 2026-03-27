@@ -1,5 +1,7 @@
 # simple_overlay_kit
 
+![Coverage](https://img.shields.io/badge/coverage-unit%20tests%20included-blue)
+
 `simple_overlay_kit` is a focused Flutter package for showing temporary UI layers with a **single, consistent API**.
 
 Use it when you want one abstraction for:
