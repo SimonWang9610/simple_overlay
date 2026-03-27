@@ -123,6 +123,7 @@ abstract base class FloatingController extends ChangeNotifier
     bool rootOverlay = false,
     bool opaque = false,
     bool maintainState = false,
+    BarrierConfig? barrierConfig,
     required WidgetBuilder builder,
   }) {
     final config = OverlayRouteConfig(
@@ -130,6 +131,7 @@ abstract base class FloatingController extends ChangeNotifier
       opaque: opaque,
       maintainState: maintainState,
       builder: builder,
+      barrierConfig: barrierConfig,
     );
 
     return _OverlayRouteController(config);
@@ -302,13 +304,13 @@ final class _TransitionRouteController extends FloatingController {
 
   @override
   Future<void> hide() async {
-    if (_route?.isActive ?? false) {
-      _route?.navigator?.removeRoute(_route!);
-      await _route?.completed;
-    }
-
+    final route = _route;
     _route = null;
     _showing = false;
+
+    if (route?.isActive ?? false) {
+      route?.navigator?.removeRoute(route);
+    }
   }
 
   @override
