@@ -1,17 +1,5 @@
 import 'package:flutter/material.dart';
 
-class OverlayEntryConfig {
-  final bool opaque;
-  final bool maintainState;
-  final bool canSizeOverlay;
-
-  const OverlayEntryConfig({
-    this.opaque = false,
-    this.maintainState = false,
-    this.canSizeOverlay = false,
-  });
-}
-
 class BarrierConfig {
   final Color? color;
   final bool dismissible;
@@ -27,16 +15,18 @@ class BarrierConfig {
 }
 
 class SimpleOverlayRoute<T> extends OverlayRoute<T> {
-  final OverlayEntryConfig config;
+  final bool opaque;
+  final bool maintainState;
   final BarrierConfig? barrier;
   final WidgetBuilder builder;
   final VoidCallback? onPop;
 
   SimpleOverlayRoute({
-    this.config = const OverlayEntryConfig(),
     this.barrier,
     super.settings,
     super.requestFocus,
+    this.opaque = false,
+    this.maintainState = false,
     required this.builder,
     this.onPop,
   });
@@ -63,9 +53,8 @@ class SimpleOverlayRoute<T> extends OverlayRoute<T> {
     }
 
     _overlayEntry = OverlayEntry(
-      opaque: config.opaque,
-      maintainState: config.maintainState,
-      canSizeOverlay: config.canSizeOverlay,
+      opaque: opaque,
+      maintainState: maintainState,
       builder: (context) => builder(context),
     );
 
@@ -94,10 +83,11 @@ class SimpleOverlayRoute<T> extends OverlayRoute<T> {
 }
 
 class SimpleTransitionRoute<T> extends TransitionRoute<T> {
-  final OverlayEntryConfig config;
   final Duration _transitionDuration;
   final Duration _reverseTransitionDuration;
   final bool _allowSnapshotting;
+  final bool _opaque;
+  final bool _maintainState;
   final RoutePageBuilder builder;
   final RouteTransitionsBuilder? transitionBuilder;
 
@@ -109,8 +99,9 @@ class SimpleTransitionRoute<T> extends TransitionRoute<T> {
     Duration transitionDuration = const Duration(milliseconds: 200),
     Duration? reverseTransitionDuration,
     bool allowSnapshotting = true,
+    bool opaque = false,
+    bool maintainState = false,
     this.barrier,
-    this.config = const OverlayEntryConfig(),
     super.settings,
     super.requestFocus,
     this.transitionBuilder,
@@ -118,7 +109,9 @@ class SimpleTransitionRoute<T> extends TransitionRoute<T> {
   }) : _transitionDuration = transitionDuration,
        _reverseTransitionDuration =
            reverseTransitionDuration ?? transitionDuration,
-       _allowSnapshotting = allowSnapshotting;
+       _allowSnapshotting = allowSnapshotting,
+       _opaque = opaque,
+       _maintainState = maintainState;
 
   @override
   Duration get transitionDuration => _transitionDuration;
@@ -127,7 +120,7 @@ class SimpleTransitionRoute<T> extends TransitionRoute<T> {
   Duration get reverseTransitionDuration => _reverseTransitionDuration;
 
   @override
-  bool get opaque => config.opaque;
+  bool get opaque => _opaque;
 
   @override
   bool get allowSnapshotting => _allowSnapshotting;
@@ -200,9 +193,8 @@ class SimpleTransitionRoute<T> extends TransitionRoute<T> {
     }
 
     _overlayEntry = OverlayEntry(
-      opaque: config.opaque,
-      maintainState: config.maintainState,
-      canSizeOverlay: config.canSizeOverlay,
+      opaque: _opaque,
+      maintainState: _maintainState,
       builder: _buildPageEntry,
     );
 

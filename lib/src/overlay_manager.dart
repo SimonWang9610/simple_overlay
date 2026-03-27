@@ -1,29 +1,24 @@
 import 'dart:async';
 
 import 'package:flutter/widgets.dart';
-import 'package:simple_overlay/simple_overlay.dart';
+import 'routes/floating_config.dart';
+import 'controllers.dart';
 
-final class OverlayManager extends ChangeNotifier {
-  OverlayManager();
+final class FloatingManager extends ChangeNotifier {
+  FloatingManager();
 
-  FloatingOverlayController? _controller;
+  FloatingController? _controller;
 
   bool get isShowing => _controller?.value ?? false;
 
-  FutureOr<void> show(BuildContext context, OverlayConfig config) async {
+  FutureOr<void> show(BuildContext context, FloatingConfig config) async {
     if (_controller != null) {
-      _controller!.removeListener(notifyListeners);
-      _controller!.dispose();
-      _controller = null;
+      _disposeController();
     }
 
-    switch (config) {
-      case RawOverlayConfig raw:
-        _controller = RawOverlayController(raw);
-      case RouteOverlayConfig route:
-        _controller = TransitionOverlayController(route);
-    }
+    _controller = FloatingController.withConfig(config);
 
+    /// Listen to the controller's value changes and notify listeners of this manager.
     _controller!.addListener(notifyListeners);
 
     await _controller!.show(context);
@@ -31,5 +26,18 @@ final class OverlayManager extends ChangeNotifier {
 
   FutureOr<void> hide() async {
     await _controller?.hide();
+    _disposeController();
+  }
+
+  void _disposeController() {
+    _controller?.removeListener(notifyListeners);
+    _controller?.dispose();
+    _controller = null;
+  }
+
+  @override
+  void dispose() {
+    _disposeController();
+    super.dispose();
   }
 }

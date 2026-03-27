@@ -29,7 +29,7 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  final manager = OverlayManager();
+  final manager = FloatingManager();
   final position = ValueNotifier(Offset.zero);
 
   @override
@@ -50,6 +50,15 @@ class _MyHomePageState extends State<MyHomePage> {
           spacing: 10,
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
+            ListenableBuilder(
+              listenable: manager,
+              builder: (_, _) {
+                return Text(
+                  'Overlay is ${manager.isShowing ? "showing" : "hidden"}',
+                  style: Theme.of(context).textTheme.headlineMedium,
+                );
+              },
+            ),
             Text('Raw overlay examples'),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
@@ -58,7 +67,7 @@ class _MyHomePageState extends State<MyHomePage> {
                   onPressed: () {
                     manager.show(
                       context,
-                      RawOverlayConfig(
+                      OverlayRouteConfig(
                         builder: (context) => AlertDialog(
                           title: const Text('Hello'),
                           content: const Text(
@@ -81,7 +90,6 @@ class _MyHomePageState extends State<MyHomePage> {
                     manager.show(
                       context,
                       RawOverlayConfig(
-                        useRoute: false,
                         builder: (context) => AlertDialog(
                           title: const Text('Hello'),
                           content: const Text(
@@ -106,7 +114,7 @@ class _MyHomePageState extends State<MyHomePage> {
               onPressed: () {
                 manager.show(
                   context,
-                  RouteOverlayConfig.dialog(
+                  TransitionRouteConfig.dialog(
                     builder: (context, animation, secondaryAnimation) {
                       return AlertDialog(
                         title: const Text('Hello'),
@@ -132,7 +140,7 @@ class _MyHomePageState extends State<MyHomePage> {
                   onPressed: () {
                     manager.show(
                       context,
-                      RouteOverlayConfig.custom(
+                      TransitionRouteConfig.custom(
                         barrierConfig: BarrierConfig(),
                         transitionBuilder:
                             (context, animation, secondaryAnimation, child) {
@@ -170,7 +178,7 @@ class _MyHomePageState extends State<MyHomePage> {
                   onPressed: () {
                     manager.show(
                       context,
-                      RouteOverlayConfig.custom(
+                      TransitionRouteConfig.custom(
                         transitionBuilder:
                             (context, animation, secondaryAnimation, child) {
                               return ScaleTransition(
@@ -220,7 +228,7 @@ class _MyHomePageState extends State<MyHomePage> {
               onPressed: () async {
                 await manager.show(
                   context,
-                  RouteOverlayConfig.custom(
+                  TransitionRouteConfig.custom(
                     transitionDuration: const Duration(seconds: 2),
                     transitionBuilder:
                         (context, animation, secondaryAnimation, child) {
@@ -320,23 +328,50 @@ class _MyHomePageState extends State<MyHomePage> {
           ],
         ),
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          showDialog(
-            context: context,
-            builder: (_) => AlertDialog(
-              title: const Text('Hello'),
-              content: const Text('Dialog above overlay'),
-              actions: [
-                TextButton(
-                  onPressed: () => Navigator.of(context).pop(),
-                  child: const Text('Close'),
-                ),
-              ],
+      bottomNavigationBar: Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceAround,
+          children: [
+            ElevatedButton(
+              onPressed: () {
+                final navigator = Navigator.of(context);
+                if (navigator.canPop()) {
+                  navigator.pop();
+                }
+              },
+              child: Text("Pop Route"),
             ),
-          );
-        },
-        child: const Icon(Icons.add),
+
+            ElevatedButton(
+              onPressed: () {
+                manager.hide();
+              },
+              child: Text("Hide"),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                showDialog(
+                  context: context,
+                  builder: (_) => AlertDialog(
+                    title: const Text('Hello'),
+                    content: const Text(
+                      'This is a normal dialog without overlay',
+                      style: TextStyle(color: Colors.red),
+                    ),
+                    actions: [
+                      TextButton(
+                        onPressed: () => Navigator.of(context).pop(),
+                        child: const Text('Close'),
+                      ),
+                    ],
+                  ),
+                );
+              },
+              child: Text("Show normal dialog"),
+            ),
+          ],
+        ),
       ),
     );
   }
