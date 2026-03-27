@@ -93,12 +93,12 @@ class SimpleTransitionRoute<T> extends TransitionRoute<T> {
     super.requestFocus,
     this.transitionBuilder,
     required this.builder,
-  }) : _transitionDuration = transitionDuration,
-       _reverseTransitionDuration =
-           reverseTransitionDuration ?? transitionDuration,
-       _allowSnapshotting = allowSnapshotting,
-       _opaque = opaque,
-       _maintainState = maintainState;
+  })  : _transitionDuration = transitionDuration,
+        _reverseTransitionDuration =
+            reverseTransitionDuration ?? transitionDuration,
+        _allowSnapshotting = allowSnapshotting,
+        _opaque = opaque,
+        _maintainState = maintainState;
 
   @override
   Duration get transitionDuration => _transitionDuration;
@@ -125,8 +125,7 @@ class SimpleTransitionRoute<T> extends TransitionRoute<T> {
       ),
     );
 
-    final Widget transitioned =
-        transitionBuilder?.call(
+    final Widget transitioned = transitionBuilder?.call(
           context,
           animation!,
           secondaryAnimation!,
@@ -185,7 +184,7 @@ class SimpleTransitionRoute<T> extends TransitionRoute<T> {
       builder: _buildPageEntry,
     );
 
-    return [?_barrierEntry, _overlayEntry!];
+    return [if (barrier != null) _barrierEntry!, _overlayEntry!];
   }
 
   OverlayEntry? _barrierEntry;
