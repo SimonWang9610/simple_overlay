@@ -1,42 +1,35 @@
+import 'dart:async';
+
 import 'package:flutter/widgets.dart';
+import 'package:simple_overlay/simple_overlay.dart';
 
-abstract interface class DisposableOverlay {
-  void dispose();
-  void hide();
-}
+final class OverlayManager extends ChangeNotifier {
+  OverlayManager();
 
-class SingleOverlayManager {
-  bool get hasOverlay => _overlay != null;
-  bool get isShowing => hasOverlay && (_overlay?.mounted ?? false);
+  FloatingOverlayController? _controller;
 
-  OverlayEntry? _overlay;
+  bool get isShowing => _controller?.value ?? false;
 
-  void show(
-    BuildContext context, {
-    required WidgetBuilder builder,
-    bool opaque = false,
-    bool maintainState = false,
-    bool canSizeOverlay = false,
-  }) {
-    assert(!hasOverlay, 'Overlay is already showing');
+  FutureOr<void> show(BuildContext context, OverlayConfig config) async {
+    if (_controller != null) {
+      _controller!.removeListener(notifyListeners);
+      _controller!.dispose();
+      _controller = null;
+    }
 
-    _overlay = OverlayEntry(
-      builder: builder,
-      opaque: opaque,
-      maintainState: maintainState,
-      canSizeOverlay: canSizeOverlay,
-    );
+    switch (config) {
+      case RawOverlayConfig raw:
+        _controller = RawOverlayController(raw);
+      case RouteOverlayConfig route:
+        _controller = TransitionOverlayController(route);
+    }
 
-    Overlay.of(context).insert(_overlay!);
+    _controller!.addListener(notifyListeners);
+
+    await _controller!.show(context);
   }
 
-  void hide() {
-    _overlay?.remove();
-    _overlay?.dispose();
-    _overlay = null;
-  }
-
-  void rebuild() {
-    _overlay?.markNeedsBuild();
+  FutureOr<void> hide() async {
+    await _controller?.hide();
   }
 }
