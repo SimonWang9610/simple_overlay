@@ -1,7 +1,16 @@
 name: simple_overlay
-description: "A new Flutter package project."
+description: "A unified Flutter overlay controller for OverlayEntry, OverlayRoute, and transition routes with configurable barriers."
 version: 0.0.1
 homepage: https://github.com/SimonWang9610/simple_overlay.git
+repository: https://github.com/SimonWang9610/simple_overlay
+issue_tracker: https://github.com/SimonWang9610/simple_overlay/issues
+
+topics:
+  - flutter
+  - overlay
+  - dialog
+  - navigator
+  - route
 
 environment:
   sdk: ^3.10.7
