@@ -1,7 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/widgets.dart';
-import 'routes/floating_config.dart';
+import 'floating_config.dart';
 import 'controllers.dart';
 
 final class FloatingManager extends ChangeNotifier {

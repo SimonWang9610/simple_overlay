@@ -1,18 +1,5 @@
 import 'package:flutter/material.dart';
-
-class BarrierConfig {
-  final Color? color;
-  final bool dismissible;
-  final String? label;
-  final Curve? curve;
-
-  const BarrierConfig({
-    this.color = const Color(0x7F000000),
-    this.dismissible = true,
-    this.label,
-    this.curve,
-  });
-}
+import 'floating_config.dart';
 
 class SimpleOverlayRoute<T> extends OverlayRoute<T> {
   final bool opaque;

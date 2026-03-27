@@ -2,8 +2,8 @@ import 'dart:async';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
-import 'routes/overlay_route.dart';
-import 'routes/floating_config.dart';
+import 'overlay_route.dart';
+import 'floating_config.dart';
 
 /// Listenable controller for showing and hiding an [OverlayEntry]/[OverlayRoute]/[TransitionRoute]
 /// Subclasses of this class should implement the logic for showing and hiding the overlay.
@@ -35,21 +35,104 @@ abstract base class FloatingController extends ChangeNotifier
 
   bool _value = false;
 
+  bool _isDisposed = false;
+
   set _showing(bool value) {
+    if (_isDisposed) return;
     if (_value != value) {
       _value = value;
       notifyListeners();
     }
   }
 
+  @override
+  void dispose() {
+    _isDisposed = true;
+    super.dispose();
+  }
+
   factory FloatingController.withConfig(FloatingConfig config) {
     return switch (config) {
-      RawOverlayConfig raw => _OverlayEntryController(raw),
-      OverlayRouteConfig route => _OverlayRouteController(route),
-      TransitionRouteConfig transition => _TransitionRouteController(
+      final RawOverlayConfig raw => _OverlayEntryController(raw),
+      final OverlayRouteConfig route => _OverlayRouteController(route),
+      final TransitionRouteConfig transition => _TransitionRouteController(
         transition,
       ),
     };
+  }
+
+  /// Factory constructor for creating a [RawDialogRoute] with custom transition.
+  factory FloatingController.dialog({
+    BarrierConfig barrierConfig = const BarrierConfig(),
+    bool useRootNavigator = false,
+    Offset? anchorPoint,
+    RouteTransitionsBuilder? transitionBuilder,
+    required RoutePageBuilder builder,
+  }) {
+    final config = DialogRouteConfig(
+      barrierConfig: barrierConfig,
+      useRootNavigator: useRootNavigator,
+      anchorPoint: anchorPoint,
+      transitionBuilder: transitionBuilder,
+      builder: builder,
+    );
+
+    return _TransitionRouteController(config);
+  }
+
+  /// Factory constructor for creating a [SimpleTransitionRoute] with custom transition.
+  factory FloatingController.custom({
+    bool useRootNavigator = false,
+    BarrierConfig? barrierConfig,
+    Duration transitionDuration = const Duration(milliseconds: 200),
+    Duration? reverseTransitionDuration,
+    RouteTransitionsBuilder? transitionBuilder,
+    required RoutePageBuilder builder,
+  }) {
+    final config = SimpleTransitionRouteConfig(
+      useRootNavigator: useRootNavigator,
+      barrierConfig: barrierConfig,
+      transitionDuration: transitionDuration,
+      reverseTransitionDuration: reverseTransitionDuration,
+      transitionBuilder: transitionBuilder,
+      builder: builder,
+    );
+
+    return _TransitionRouteController(config);
+  }
+
+  /// Factory constructor for creating a [OverlayEntry] with custom builder.
+  factory FloatingController.overlay({
+    bool rootOverlay = false,
+    bool opaque = false,
+    bool maintainState = false,
+    required WidgetBuilder builder,
+  }) {
+    final config = RawOverlayConfig(
+      rootOverlay: rootOverlay,
+      opaque: opaque,
+      maintainState: maintainState,
+      builder: builder,
+    );
+
+    return _OverlayEntryController(config);
+  }
+
+  /// Factory constructor for creating a [SimpleOverlayRoute] with custom builder.
+  factory FloatingController.route({
+    bool rootOverlay = false,
+    bool opaque = false,
+    bool maintainState = false,
+    required WidgetBuilder builder,
+  }) {
+    final config = OverlayRouteConfig(
+      rootOverlay: rootOverlay,
+      opaque: opaque,
+      maintainState: maintainState,
+      builder: builder,
+    );
+
+    return _OverlayRouteController(config);
   }
 }
 
@@ -113,10 +196,14 @@ final class _OverlayRouteController extends FloatingController {
   OverlayRoute? _route;
 
   @override
+  bool get value => _value && _route != null;
+
+  @override
   void show(BuildContext context) {
     if (value) return;
+    assert(_route == null, 'Route is already showing');
 
-    _route ??= SimpleOverlayRoute(
+    _route = SimpleOverlayRoute(
       opaque: config.opaque,
       maintainState: config.maintainState,
       builder: config.builder,
@@ -152,7 +239,8 @@ final class _OverlayRouteController extends FloatingController {
 
   @override
   void dispose() {
-    _remove();
+    hide();
+    _isDisposed = true;
     super.dispose();
   }
 }
@@ -163,13 +251,18 @@ final class _TransitionRouteController extends FloatingController {
   _TransitionRouteController(this.config);
 
   @override
-  bool get value => _value && config.route.isActive;
+  bool get value => _value && _route != null;
 
-  bool _isDisposed = false;
+  TransitionRoute? _route;
 
   @override
   Future<void> show(BuildContext context) async {
     if (value) return;
+    assert(_route == null, 'Route is already showing');
+
+    ///! Must create a new route from the config,
+    ///! as a route can not be reused after it is pushed and popped.
+    _route = config.route;
 
     final navigator = Navigator.of(
       context,
@@ -179,7 +272,8 @@ final class _TransitionRouteController extends FloatingController {
     /// When the route is popped by user action or system back button,
     /// the showing status will be set to false automatically.
     // ignore: unawaited_futures
-    navigator.push(config.route).whenComplete(() {
+    navigator.push(_route!).whenComplete(() {
+      _route = null;
       _showing = false;
     });
 
@@ -190,12 +284,12 @@ final class _TransitionRouteController extends FloatingController {
         if (!completer.isCompleted) {
           completer.complete();
         }
-        config.route.animation?.removeStatusListener(complete);
+        _route?.animation?.removeStatusListener(complete);
       }
     }
 
-    if (config.route.animation != null) {
-      config.route.animation!.addStatusListener(complete);
+    if (_route?.animation != null) {
+      _route!.animation!.addStatusListener(complete);
     } else {
       completer.complete();
     }
@@ -207,11 +301,12 @@ final class _TransitionRouteController extends FloatingController {
 
   @override
   Future<void> hide() async {
-    if (config.route.isActive) {
-      config.route.navigator?.removeRoute(config.route);
-      await config.route.completed;
+    if (_route?.isActive ?? false) {
+      _route?.navigator?.removeRoute(_route!);
+      await _route?.completed;
     }
 
+    _route = null;
     _showing = false;
   }
 
@@ -220,11 +315,5 @@ final class _TransitionRouteController extends FloatingController {
     hide();
     _isDisposed = true;
     super.dispose();
-  }
-
-  @override
-  set _showing(bool value) {
-    if (_isDisposed) return;
-    super._showing = value;
   }
 }

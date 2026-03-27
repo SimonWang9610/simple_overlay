@@ -114,7 +114,7 @@ class _MyHomePageState extends State<MyHomePage> {
               onPressed: () {
                 manager.show(
                   context,
-                  TransitionRouteConfig.dialog(
+                  DialogRouteConfig(
                     builder: (context, animation, secondaryAnimation) {
                       return AlertDialog(
                         title: const Text('Hello'),
@@ -140,7 +140,7 @@ class _MyHomePageState extends State<MyHomePage> {
                   onPressed: () {
                     manager.show(
                       context,
-                      TransitionRouteConfig.custom(
+                      SimpleTransitionRouteConfig(
                         barrierConfig: BarrierConfig(),
                         transitionBuilder:
                             (context, animation, secondaryAnimation, child) {
@@ -178,7 +178,7 @@ class _MyHomePageState extends State<MyHomePage> {
                   onPressed: () {
                     manager.show(
                       context,
-                      TransitionRouteConfig.custom(
+                      SimpleTransitionRouteConfig(
                         transitionBuilder:
                             (context, animation, secondaryAnimation, child) {
                               return ScaleTransition(
@@ -221,6 +221,33 @@ class _MyHomePageState extends State<MyHomePage> {
                     'Show custom route overlay without barrier',
                   ),
                 ),
+                ElevatedButton(
+                  onPressed: () {
+                    manager.show(
+                      context,
+                      SimpleTransitionRouteConfig(
+                        builder: (_, _, _) {
+                          return Stack(
+                            children: [
+                              Positioned(
+                                top: 10,
+                                right: 20,
+                                child: ColoredBox(
+                                  color: Colors.red,
+                                  child: const SizedBox(
+                                    width: 100,
+                                    height: 100,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          );
+                        },
+                      ),
+                    );
+                  },
+                  child: Text("Show custom route overlay with Positioned"),
+                ),
               ],
             ),
             Text("Transient overlay example"),
@@ -228,7 +255,7 @@ class _MyHomePageState extends State<MyHomePage> {
               onPressed: () async {
                 await manager.show(
                   context,
-                  TransitionRouteConfig.custom(
+                  SimpleTransitionRouteConfig(
                     transitionDuration: const Duration(seconds: 2),
                     transitionBuilder:
                         (context, animation, secondaryAnimation, child) {
