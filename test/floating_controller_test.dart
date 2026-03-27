@@ -330,8 +330,9 @@ void main() {
       await tester.pump(const Duration(milliseconds: 120));
       expect(controller.value, isTrue);
 
-      await controller.hide();
+      final hideFuture = controller.hide();
       await tester.pumpAndSettle();
+      await hideFuture;
 
       expect(controller.value, isFalse);
       expect(find.text('custom-hide-active'), findsNothing);

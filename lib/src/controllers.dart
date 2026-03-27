@@ -310,6 +310,13 @@ final class _TransitionRouteController extends FloatingController {
 
     if (route?.isActive ?? false) {
       route?.navigator?.removeRoute(route);
+
+      /// when [TransitionRoute.dispose] is called, the route will be removed from navigator
+      /// and its animation will be disposed immediately,
+      ///
+      /// [Route.popped] typically happens before [Route.dispose],
+      /// and the route's animation will be disposed in [Route.dispose].
+      await route?.completed;
     }
   }
 
