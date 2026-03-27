@@ -89,6 +89,29 @@ class _MyHomePageState extends State<MyHomePage> {
                   onPressed: () {
                     manager.show(
                       context,
+                      OverlayRouteConfig(
+                        barrierConfig: const BarrierConfig(),
+                        builder: (context) => AlertDialog(
+                          title: const Text('Hello'),
+                          content: const Text(
+                            'This is a simple raw overlay dialog using route with barrier',
+                          ),
+                          actions: [
+                            TextButton(
+                              onPressed: () => manager.hide(),
+                              child: const Text('Close'),
+                            ),
+                          ],
+                        ),
+                      ),
+                    );
+                  },
+                  child: const Text('Show raw overlay with route and barrier'),
+                ),
+                ElevatedButton(
+                  onPressed: () {
+                    manager.show(
+                      context,
                       RawOverlayConfig(
                         builder: (context) => AlertDialog(
                           title: const Text('Hello'),

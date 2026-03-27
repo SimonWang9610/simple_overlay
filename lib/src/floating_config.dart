@@ -1,5 +1,7 @@
+// ignore_for_file: public_member_api_docs, sort_constructors_first
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
+
 import 'package:simple_overlay/src/overlay_route.dart';
 
 class BarrierConfig {
@@ -14,6 +16,24 @@ class BarrierConfig {
     this.label,
     this.curve,
   });
+
+  @override
+  bool operator ==(covariant BarrierConfig other) {
+    if (identical(this, other)) return true;
+
+    return other.color == color &&
+        other.dismissible == dismissible &&
+        other.label == label &&
+        other.curve == curve;
+  }
+
+  @override
+  int get hashCode {
+    return color.hashCode ^
+        dismissible.hashCode ^
+        label.hashCode ^
+        curve.hashCode;
+  }
 }
 
 sealed class FloatingConfig {
@@ -33,13 +53,6 @@ final class RawOverlayConfig extends FloatingConfig {
     required this.builder,
   });
 
-  OverlayRouteConfig get useRoute => OverlayRouteConfig(
-    rootOverlay: rootOverlay,
-    opaque: opaque,
-    maintainState: maintainState,
-    builder: builder,
-  );
-
   @override
   int get hashCode => Object.hash(rootOverlay, opaque, maintainState, builder);
 
@@ -58,33 +71,30 @@ final class OverlayRouteConfig extends FloatingConfig {
   final bool rootOverlay;
   final bool opaque;
   final bool maintainState;
+  final BarrierConfig? barrierConfig;
   final WidgetBuilder builder;
 
   const OverlayRouteConfig({
     this.rootOverlay = false,
     this.opaque = false,
     this.maintainState = false,
+    this.barrierConfig,
     required this.builder,
   });
 
-  RawOverlayConfig get useRaw => RawOverlayConfig(
-    rootOverlay: rootOverlay,
-    opaque: opaque,
-    maintainState: maintainState,
-    builder: builder,
-  );
-
   @override
-  int get hashCode => Object.hash(rootOverlay, opaque, maintainState, builder);
+  int get hashCode =>
+      Object.hash(rootOverlay, opaque, maintainState, builder, barrierConfig);
 
   @override
   bool operator ==(Object other) {
     if (identical(this, other)) return true;
-    return other is RawOverlayConfig &&
+    return other is OverlayRouteConfig &&
         other.rootOverlay == rootOverlay &&
         other.opaque == opaque &&
         other.maintainState == maintainState &&
-        other.builder == builder;
+        other.builder == builder &&
+        other.barrierConfig == barrierConfig;
   }
 }
 

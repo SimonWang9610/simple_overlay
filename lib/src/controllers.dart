@@ -207,6 +207,7 @@ final class _OverlayRouteController extends FloatingController {
       opaque: config.opaque,
       maintainState: config.maintainState,
       builder: config.builder,
+      barrier: config.barrierConfig,
     );
 
     final navigator = Navigator.of(context, rootNavigator: config.rootOverlay);
