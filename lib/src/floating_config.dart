@@ -2,7 +2,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 
-import 'package:simple_overlay/src/overlay_route.dart';
+import 'package:simple_overlay_kit/src/overlay_route.dart';
 
 class BarrierConfig {
   final Color? color;

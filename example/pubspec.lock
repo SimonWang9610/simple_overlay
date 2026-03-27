@@ -139,7 +139,7 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.9.1"
-  simple_overlay:
+  simple_overlay_kit:
     dependency: "direct main"
     description:
       path: ".."

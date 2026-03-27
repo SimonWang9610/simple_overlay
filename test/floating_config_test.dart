@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:simple_overlay/simple_overlay.dart';
-import 'package:simple_overlay/src/overlay_route.dart';
+import 'package:simple_overlay_kit/simple_overlay.dart';
+import 'package:simple_overlay_kit/src/overlay_route.dart';
 
 import 'test_helpers.dart';
 

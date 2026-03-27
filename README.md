@@ -1,6 +1,6 @@
-# simple_overlay
+# simple_overlay_kit
 
-`simple_overlay` is a focused Flutter package for showing temporary UI layers with a **single, consistent API**.
+`simple_overlay_kit` is a focused Flutter package for showing temporary UI layers with a **single, consistent API**.
 
 Use it when you want one abstraction for:
 - raw `OverlayEntry`
@@ -13,7 +13,7 @@ Use it when you want one abstraction for:
 
 Many overlay packages are optimized for one style only (entry-only, dialog-only, or highly opinionated UI widgets).
 
-`simple_overlay` is intentionally low-level and composable:
+`simple_overlay_kit` is intentionally low-level and composable:
 - **Unified controller model** across overlay entry, route, and transition route.
 - **Consistent barrier configuration** (`BarrierConfig`) for route-based overlays.
 - **Lifecycle-aware state** via `ValueListenable<bool>` (`controller.value`).
@@ -35,7 +35,7 @@ Many overlay packages are optimized for one style only (entry-only, dialog-only,
 
 ## Comparison (typical alternatives on pub.dev)
 
-| Capability | `simple_overlay` | Many overlay/dialog packages |
+| Capability | `simple_overlay_kit` | Many overlay/dialog packages |
 | --- | --- | --- |
 | Single controller API for entry + route + transition route | ✅ | ❌ Often split APIs |
 | Shared barrier config model across route types | ✅ | ⚠️ Inconsistent or per-widget |
@@ -53,7 +53,7 @@ Add dependency:
 
 ```yaml
 dependencies:
-	simple_overlay: ^0.0.1
+	simple_overlay_kit: ^0.0.1
 ```
 
 Then run:
