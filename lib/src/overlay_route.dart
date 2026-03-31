@@ -151,7 +151,7 @@ class SimpleTransitionRoute<T> extends TransitionRoute<T> {
     final Widget barrierWidget = (color != null && config.curve != null)
         ? AnimatedModalBarrier(
             color: animation!.drive(
-              ColorTween(begin: color.withOpacity(0.0), end: color).chain(
+              ColorTween(begin: color.withValues(alpha: 0.0), end: color).chain(
                 CurveTween(curve: config.curve!),
               ),
             ),

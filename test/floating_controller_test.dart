@@ -18,8 +18,8 @@ void main() {
       expect(controller.value, isTrue);
       expect(find.text('A'), findsOneWidget);
 
-      controller.hide();
-      await tester.pump();
+      await Future.sync(() => controller.hide());
+      await tester.pumpAndSettle();
 
       expect(controller.value, isFalse);
       expect(find.text('A'), findsNothing);
@@ -75,8 +75,8 @@ void main() {
       await tester.pump();
       expect(find.text('overlay-entry-content'), findsOneWidget);
 
-      controller.hide();
-      await tester.pump();
+      await Future.sync(() => controller.hide());
+      await tester.pumpAndSettle();
 
       expect(controller.value, isFalse);
       expect(find.text('overlay-entry-content'), findsNothing);
@@ -102,6 +102,108 @@ void main() {
 
       expect(controller.value, isFalse);
       expect(find.text('overlay-entry-dispose'), findsNothing);
+    });
+
+    testWidgets(
+        'show completes after forward animation when transition is used', (
+      tester,
+    ) async {
+      final animationSamples = <double>[];
+      final controller = FloatingController.overlay(
+        builder: (_) => const Text('overlay-entry-animated-show'),
+        transitionDuration: const Duration(milliseconds: 300),
+        transitionBuilder: (context, animation, child) {
+          return AnimatedBuilder(
+            animation: animation,
+            builder: (context, _) {
+              animationSamples.add(animation.value);
+              return Opacity(opacity: animation.value, child: child);
+            },
+          );
+        },
+      );
+
+      final context = await pumpAppAndGetContext(tester);
+      controller.show(context);
+
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 320));
+      expect(controller.value, isTrue);
+
+      var showCompleted = false;
+
+      final showFuture = controller.hide();
+      await tester.pump();
+
+      expect(controller.value, isTrue);
+      expect(showCompleted, isFalse);
+      expect(find.text('overlay-entry-animated-show'), findsOneWidget);
+      expect(animationSamples, isNotEmpty);
+
+      await tester.pump(const Duration(milliseconds: 100));
+      expect(showCompleted, isFalse);
+      expect(animationSamples.any((value) => value > 0 && value < 1), isTrue);
+
+      await tester.pump(const Duration(milliseconds: 220));
+      await showFuture;
+      showCompleted = true;
+
+      expect(showCompleted, isTrue);
+      expect(animationSamples.any((value) => value >= 0.95), isTrue);
+
+      await Future.sync(() => controller.hide());
+      await tester.pumpAndSettle();
+    });
+
+    testWidgets(
+        'hide completes after reverse animation when transition is used', (
+      tester,
+    ) async {
+      final animationSamples = <double>[];
+      final controller = FloatingController.overlay(
+        builder: (_) => const Text('overlay-entry-animated-hide'),
+        transitionDuration: const Duration(milliseconds: 300),
+        transitionBuilder: (context, animation, child) {
+          return AnimatedBuilder(
+            animation: animation,
+            builder: (context, _) {
+              animationSamples.add(animation.value);
+              return Opacity(opacity: animation.value, child: child);
+            },
+          );
+        },
+      );
+
+      final context = await pumpAppAndGetContext(tester);
+
+      controller.show(context);
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 320));
+
+      expect(controller.value, isTrue);
+      expect(find.text('overlay-entry-animated-hide'), findsOneWidget);
+
+      var hideCompleted = false;
+      final hideFuture = controller.hide();
+
+      await tester.pump();
+      expect(hideCompleted, isFalse);
+      expect(controller.value, isTrue);
+      expect(find.text('overlay-entry-animated-hide'), findsOneWidget);
+
+      await tester.pump(const Duration(milliseconds: 120));
+      expect(hideCompleted, isFalse);
+      expect(controller.value, isTrue);
+      expect(find.text('overlay-entry-animated-hide'), findsOneWidget);
+
+      await tester.pump(const Duration(milliseconds: 220));
+      await hideFuture;
+      hideCompleted = true;
+
+      expect(hideCompleted, isTrue);
+      expect(controller.value, isFalse);
+      expect(find.text('overlay-entry-animated-hide'), findsNothing);
+      expect(animationSamples.any((value) => value <= 0.05), isTrue);
     });
   });
 
@@ -226,12 +328,12 @@ void main() {
     ) async {
       final controller = FloatingController.custom(
         transitionDuration: const Duration(milliseconds: 100),
-        builder:
-            (
-              context,
-              animation,
-              secondaryAnimation,
-            ) => const Text('custom-transition-no-barrier'),
+        builder: (
+          context,
+          animation,
+          secondaryAnimation,
+        ) =>
+            const Text('custom-transition-no-barrier'),
       );
 
       final context = await pumpAppAndGetContext(tester);
@@ -261,12 +363,12 @@ void main() {
           label: barrierLabel,
           curve: Curves.linear,
         ),
-        builder:
-            (
-              context,
-              animation,
-              secondaryAnimation,
-            ) => const Text('custom-transition-with-barrier'),
+        builder: (
+          context,
+          animation,
+          secondaryAnimation,
+        ) =>
+            const Text('custom-transition-with-barrier'),
       );
 
       final context = await pumpAppAndGetContext(tester);
@@ -291,12 +393,12 @@ void main() {
 
     testWidgets('hide is safe before show', (tester) async {
       final controller = FloatingController.custom(
-        builder:
-            (
-              context,
-              animation,
-              secondaryAnimation,
-            ) => const Text('custom-hide-before-show'),
+        builder: (
+          context,
+          animation,
+          secondaryAnimation,
+        ) =>
+            const Text('custom-hide-before-show'),
       );
 
       await controller.hide();
@@ -316,12 +418,12 @@ void main() {
     testWidgets('hide removes active transition route', (tester) async {
       final controller = FloatingController.custom(
         transitionDuration: const Duration(milliseconds: 100),
-        builder:
-            (
-              context,
-              animation,
-              secondaryAnimation,
-            ) => const Text('custom-hide-active'),
+        builder: (
+          context,
+          animation,
+          secondaryAnimation,
+        ) =>
+            const Text('custom-hide-active'),
       );
       final context = await pumpAppAndGetContext(tester);
 
@@ -341,12 +443,12 @@ void main() {
     testWidgets('calling show twice while active is a no-op', (tester) async {
       final controller = FloatingController.custom(
         transitionDuration: const Duration(milliseconds: 100),
-        builder:
-            (
-              context,
-              animation,
-              secondaryAnimation,
-            ) => const Text('custom-show-twice'),
+        builder: (
+          context,
+          animation,
+          secondaryAnimation,
+        ) =>
+            const Text('custom-show-twice'),
       );
       final context = await pumpAppAndGetContext(tester);
 
@@ -370,12 +472,12 @@ void main() {
     ) async {
       final controller = FloatingController.custom(
         transitionDuration: const Duration(milliseconds: 100),
-        builder:
-            (
-              context,
-              animation,
-              secondaryAnimation,
-            ) => const Text('custom-dispose-active'),
+        builder: (
+          context,
+          animation,
+          secondaryAnimation,
+        ) =>
+            const Text('custom-dispose-active'),
       );
       final context = await pumpAppAndGetContext(tester);
 
@@ -402,12 +504,12 @@ void main() {
           label: barrierLabel,
           dismissible: false,
         ),
-        builder:
-            (
-              context,
-              animation,
-              secondaryAnimation,
-            ) => const Text('dialog-controller-content'),
+        builder: (
+          context,
+          animation,
+          secondaryAnimation,
+        ) =>
+            const Text('dialog-controller-content'),
       );
 
       final context = await pumpAppAndGetContext(tester);

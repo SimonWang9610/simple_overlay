@@ -56,8 +56,8 @@ abstract base class FloatingController extends ChangeNotifier
       final RawOverlayConfig raw => _OverlayEntryController(raw),
       final OverlayRouteConfig route => _OverlayRouteController(route),
       final TransitionRouteConfig transition => _TransitionRouteController(
-        transition,
-      ),
+          transition,
+        ),
     };
   }
 
@@ -106,12 +106,18 @@ abstract base class FloatingController extends ChangeNotifier
     bool rootOverlay = false,
     bool opaque = false,
     bool maintainState = false,
+    Duration transitionDuration = const Duration(milliseconds: 300),
+    Duration? reverseTransitionDuration,
+    OverlayTransitionBuilder? transitionBuilder,
     required WidgetBuilder builder,
   }) {
     final config = RawOverlayConfig(
       rootOverlay: rootOverlay,
       opaque: opaque,
       maintainState: maintainState,
+      transitionDuration: transitionDuration,
+      reverseTransitionDuration: reverseTransitionDuration,
+      transitionBuilder: transitionBuilder,
       builder: builder,
     );
 
@@ -119,6 +125,7 @@ abstract base class FloatingController extends ChangeNotifier
   }
 
   /// Factory constructor for creating a [SimpleOverlayRoute] with custom builder.
+  /// without transition, and the showing status will be set to true immediately after pushing the route.
   factory FloatingController.route({
     bool rootOverlay = false,
     bool opaque = false,
@@ -144,15 +151,40 @@ final class _OverlayEntryController extends FloatingController {
   _OverlayEntryController(this.config);
 
   OverlayEntry? _entry;
+  AnimationController? _animation;
 
   @override
-  void show(BuildContext context) {
+  Future<void> show(BuildContext context) async {
     if (value) return;
+
+    if (config.transitionBuilder != null) {
+      final navigator =
+          Navigator.of(context, rootNavigator: config.rootOverlay);
+
+      _animation ??= AnimationController(
+        duration: config.transitionDuration,
+        reverseDuration: config.reverseTransitionDuration,
+        debugLabel: 'Raw overlay Animation',
+        vsync: navigator,
+      );
+    }
 
     final overlay = Overlay.of(context, rootOverlay: config.rootOverlay);
 
     _entry ??= OverlayEntry(
-      builder: config.builder,
+      builder: (ctx) {
+        Widget child = config.builder(ctx);
+
+        if (config.transitionBuilder != null) {
+          child = config.transitionBuilder!(
+            ctx,
+            _animation!,
+            child,
+          );
+        }
+
+        return child;
+      },
       opaque: config.opaque,
       maintainState: config.maintainState,
     );
@@ -162,13 +194,23 @@ final class _OverlayEntryController extends FloatingController {
     _entry!.addListener(_onOverlayEntryChanged);
 
     _showing = true;
+
+    await _animation?.forward();
   }
 
   @override
-  void hide() {
+  Future<void> hide() async {
+    await _animation?.reverse();
+
+    _hide();
+  }
+
+  void _hide() {
     _entry?.removeListener(_onOverlayEntryChanged);
     _entry?.remove();
     _entry?.dispose();
+    _animation?.dispose();
+    _animation = null;
     _entry = null;
     _showing = false;
   }
@@ -179,13 +221,13 @@ final class _OverlayEntryController extends FloatingController {
     if (_entry!.mounted) {
       _showing = true;
     } else {
-      hide();
+      _hide();
     }
   }
 
   @override
   void dispose() {
-    hide();
+    _hide();
     super.dispose();
   }
 }
