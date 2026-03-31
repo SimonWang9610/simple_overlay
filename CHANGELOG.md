@@ -1,3 +1,8 @@
+
+## 1.0.1
+
+- support optional transition builder for `FloatingController.overlay` and `RawOverlayConfig` to enable custom transition animations for overlays.
+
 ## 1.0.0
 
 ### Added

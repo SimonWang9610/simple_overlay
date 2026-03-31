@@ -4,6 +4,12 @@ import 'package:flutter/widgets.dart';
 
 import 'package:simple_overlay_kit/src/overlay_route.dart';
 
+typedef OverlayTransitionBuilder = Widget Function(
+  BuildContext context,
+  Animation<double> animation,
+  Widget child,
+);
+
 class BarrierConfig {
   final Color? color;
   final bool dismissible;
@@ -40,21 +46,32 @@ sealed class FloatingConfig {
   const FloatingConfig();
 }
 
+/// Factory constructor for creating a [OverlayEntry] with custom builder.
+///
+/// If [transitionBuilder] is provided, the overlay will be shown with the transition,
+/// otherwise it will be shown immediately without transition.
 final class RawOverlayConfig extends FloatingConfig {
   final bool rootOverlay;
   final bool opaque;
   final bool maintainState;
+  final Duration transitionDuration;
+  final Duration? reverseTransitionDuration;
+  final OverlayTransitionBuilder? transitionBuilder;
   final WidgetBuilder builder;
 
   const RawOverlayConfig({
     this.rootOverlay = false,
     this.opaque = false,
     this.maintainState = false,
+    this.transitionBuilder,
+    this.transitionDuration = const Duration(milliseconds: 300),
+    this.reverseTransitionDuration,
     required this.builder,
   });
 
   @override
-  int get hashCode => Object.hash(rootOverlay, opaque, maintainState, builder);
+  int get hashCode => Object.hash(
+      rootOverlay, opaque, maintainState, transitionBuilder, builder);
 
   @override
   bool operator ==(Object other) {
@@ -63,6 +80,7 @@ final class RawOverlayConfig extends FloatingConfig {
         other.rootOverlay == rootOverlay &&
         other.opaque == opaque &&
         other.maintainState == maintainState &&
+        other.transitionBuilder == transitionBuilder &&
         other.builder == builder;
   }
 }
@@ -133,14 +151,14 @@ final class DialogRouteConfig extends TransitionRouteConfig {
 
   @override
   TransitionRoute get route => RawDialogRoute(
-    pageBuilder: builder,
-    barrierLabel: barrierConfig!.label,
-    barrierDismissible: barrierConfig!.dismissible,
-    barrierColor: barrierConfig!.color,
-    transitionBuilder: transitionBuilder,
-    anchorPoint: anchorPoint,
-    transitionDuration: transitionDuration,
-  );
+        pageBuilder: builder,
+        barrierLabel: barrierConfig!.label,
+        barrierDismissible: barrierConfig!.dismissible,
+        barrierColor: barrierConfig!.color,
+        transitionBuilder: transitionBuilder,
+        anchorPoint: anchorPoint,
+        transitionDuration: transitionDuration,
+      );
 }
 
 final class SimpleTransitionRouteConfig extends TransitionRouteConfig {
@@ -155,10 +173,10 @@ final class SimpleTransitionRouteConfig extends TransitionRouteConfig {
 
   @override
   TransitionRoute get route => SimpleTransitionRoute(
-    barrier: barrierConfig,
-    transitionDuration: transitionDuration,
-    reverseTransitionDuration: reverseTransitionDuration,
-    transitionBuilder: transitionBuilder,
-    builder: builder,
-  );
+        barrier: barrierConfig,
+        transitionDuration: transitionDuration,
+        reverseTransitionDuration: reverseTransitionDuration,
+        transitionBuilder: transitionBuilder,
+        builder: builder,
+      );
 }

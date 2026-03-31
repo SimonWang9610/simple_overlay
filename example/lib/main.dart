@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:simple_overlay_kit/simple_overlay_kit.dart';
 
@@ -108,6 +109,11 @@ class _MyHomePageState extends State<MyHomePage> {
                   },
                   child: const Text('Show raw overlay with route and barrier'),
                 ),
+              ],
+            ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              children: [
                 ElevatedButton(
                   onPressed: () {
                     manager.show(
@@ -129,6 +135,34 @@ class _MyHomePageState extends State<MyHomePage> {
                     );
                   },
                   child: const Text('Show raw overlay with overlay'),
+                ),
+                ElevatedButton(
+                  onPressed: () {
+                    manager.show(
+                      context,
+                      RawOverlayConfig(
+                        transitionBuilder: (context, animation, child) {
+                          return FadeTransition(
+                            opacity: animation,
+                            child: child,
+                          );
+                        },
+                        builder: (context) => AlertDialog(
+                          title: const Text('Hello'),
+                          content: const Text(
+                            'This is a simple raw overlay without route but animated',
+                          ),
+                          actions: [
+                            TextButton(
+                              onPressed: () => manager.hide(),
+                              child: const Text('Close'),
+                            ),
+                          ],
+                        ),
+                      ),
+                    );
+                  },
+                  child: const Text('Show raw overlay with overlay/animation'),
                 ),
               ],
             ),
