@@ -81,7 +81,7 @@ abstract base class FloatingController extends ChangeNotifier
   }
 
   /// Factory constructor for creating a [SimpleTransitionRoute] with custom transition.
-  factory FloatingController.custom({
+  factory FloatingController.transition({
     bool useRootNavigator = false,
     BarrierConfig? barrierConfig,
     Duration transitionDuration = const Duration(milliseconds: 200),
@@ -101,16 +101,39 @@ abstract base class FloatingController extends ChangeNotifier
     return _TransitionRouteController(config);
   }
 
-  /// Factory constructor for creating a [OverlayEntry] with custom builder.
+  /// Factory constructor for creating an overlay.
+  ///
+  /// if [useRoute] is true, it will create a [SimpleOverlayRoute] and push it to the navigator,
+  /// [transitionDuration], [reverseTransitionDuration] and [transitionBuilder] will be ignored in this case.
+  ///
+  /// if [useRoute] is false, it will create an [OverlayEntry] and insert it to the overlay,
+  /// [transitionDuration], [reverseTransitionDuration] and [transitionBuilder] will be used for the transition
+  /// of the overlay entry.
+  ///
+  /// [barrierConfig] will only be used when [useRoute] is true, and will be ignored when [useRoute] is false.
   factory FloatingController.overlay({
     bool rootOverlay = false,
     bool opaque = false,
     bool maintainState = false,
     Duration transitionDuration = const Duration(milliseconds: 300),
     Duration? reverseTransitionDuration,
+    bool useRoute = false,
+    BarrierConfig? barrierConfig,
     OverlayTransitionBuilder? transitionBuilder,
     required WidgetBuilder builder,
   }) {
+    if (useRoute) {
+      final config = OverlayRouteConfig(
+        rootOverlay: rootOverlay,
+        opaque: opaque,
+        maintainState: maintainState,
+        barrierConfig: barrierConfig,
+        builder: builder,
+      );
+
+      return _OverlayRouteController(config);
+    }
+
     final config = RawOverlayConfig(
       rootOverlay: rootOverlay,
       opaque: opaque,
@@ -122,26 +145,6 @@ abstract base class FloatingController extends ChangeNotifier
     );
 
     return _OverlayEntryController(config);
-  }
-
-  /// Factory constructor for creating a [SimpleOverlayRoute] with custom builder.
-  /// without transition, and the showing status will be set to true immediately after pushing the route.
-  factory FloatingController.route({
-    bool rootOverlay = false,
-    bool opaque = false,
-    bool maintainState = false,
-    BarrierConfig? barrierConfig,
-    required WidgetBuilder builder,
-  }) {
-    final config = OverlayRouteConfig(
-      rootOverlay: rootOverlay,
-      opaque: opaque,
-      maintainState: maintainState,
-      builder: builder,
-      barrierConfig: barrierConfig,
-    );
-
-    return _OverlayRouteController(config);
   }
 }
 

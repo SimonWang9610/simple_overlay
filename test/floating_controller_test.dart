@@ -211,7 +211,8 @@ void main() {
     testWidgets('without barrier config pushes and pops route content', (
       tester,
     ) async {
-      final controller = FloatingController.route(
+      final controller = FloatingController.overlay(
+        useRoute: true,
         builder: (_) => const Text('route-controller-no-barrier'),
       );
 
@@ -262,7 +263,8 @@ void main() {
     });
 
     testWidgets('hide removes route without navigator pop', (tester) async {
-      final controller = FloatingController.route(
+      final controller = FloatingController.overlay(
+        useRoute: true,
         barrierConfig: const BarrierConfig(label: 'route-hide-barrier'),
         builder: (_) => const Text('route-controller-hide'),
       );
@@ -285,7 +287,8 @@ void main() {
     testWidgets('calling show twice keeps a single active route', (
       tester,
     ) async {
-      final controller = FloatingController.route(
+      final controller = FloatingController.overlay(
+        useRoute: true,
         builder: (_) => const Text('route-show-twice'),
       );
       final context = await pumpAppAndGetContext(tester);
@@ -305,7 +308,8 @@ void main() {
     });
 
     testWidgets('dispose while route is active clears state', (tester) async {
-      final controller = FloatingController.route(
+      final controller = FloatingController.overlay(
+        useRoute: true,
         builder: (_) => const Text('route-dispose-active'),
       );
       final context = await pumpAppAndGetContext(tester);
@@ -326,7 +330,7 @@ void main() {
     testWidgets('without barrier config renders route content only', (
       tester,
     ) async {
-      final controller = FloatingController.custom(
+      final controller = FloatingController.transition(
         transitionDuration: const Duration(milliseconds: 100),
         builder: (
           context,
@@ -357,7 +361,7 @@ void main() {
 
     testWidgets('with barrier config renders labeled barrier', (tester) async {
       const barrierLabel = 'custom-transition-barrier';
-      final controller = FloatingController.custom(
+      final controller = FloatingController.transition(
         transitionDuration: const Duration(milliseconds: 100),
         barrierConfig: const BarrierConfig(
           label: barrierLabel,
@@ -392,7 +396,7 @@ void main() {
     });
 
     testWidgets('hide is safe before show', (tester) async {
-      final controller = FloatingController.custom(
+      final controller = FloatingController.transition(
         builder: (
           context,
           animation,
@@ -416,7 +420,7 @@ void main() {
     });
 
     testWidgets('hide removes active transition route', (tester) async {
-      final controller = FloatingController.custom(
+      final controller = FloatingController.transition(
         transitionDuration: const Duration(milliseconds: 100),
         builder: (
           context,
@@ -441,7 +445,7 @@ void main() {
     });
 
     testWidgets('calling show twice while active is a no-op', (tester) async {
-      final controller = FloatingController.custom(
+      final controller = FloatingController.transition(
         transitionDuration: const Duration(milliseconds: 100),
         builder: (
           context,
@@ -470,7 +474,7 @@ void main() {
     testWidgets('dispose while active transition route clears state', (
       tester,
     ) async {
-      final controller = FloatingController.custom(
+      final controller = FloatingController.transition(
         transitionDuration: const Duration(milliseconds: 100),
         builder: (
           context,
