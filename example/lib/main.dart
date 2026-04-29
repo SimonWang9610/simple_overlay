@@ -1,4 +1,4 @@
-import 'package:flutter/foundation.dart';
+import 'package:example/panel_example.dart';
 import 'package:flutter/material.dart';
 import 'package:simple_overlay_kit/simple_overlay_kit.dart';
 
@@ -15,7 +15,8 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'Flutter Demo',
       theme: ThemeData(colorScheme: .fromSeed(seedColor: Colors.deepPurple)),
-      home: const MyHomePage(title: 'Flutter Demo Home Page'),
+      // home: const MyHomePage(title: 'Flutter Demo Home Page'),
+      home: FloatingPanelExample(),
     );
   }
 }
@@ -199,19 +200,18 @@ class _MyHomePageState extends State<MyHomePage> {
                       context,
                       SimpleTransitionRouteConfig(
                         barrierConfig: BarrierConfig(),
-                        transitionBuilder:
-                            (context, animation, secondaryAnimation, child) {
-                              return ScaleTransition(
-                                scale: animation,
-                                child: AlignTransition(
-                                  alignment: AlignmentTween(
-                                    begin: Alignment.topCenter,
-                                    end: Alignment.bottomCenter,
-                                  ).animate(animation),
-                                  child: child,
-                                ),
-                              );
-                            },
+                        transitionBuilder: (context, animation, secondaryAnimation, child) {
+                          return ScaleTransition(
+                            scale: animation,
+                            child: AlignTransition(
+                              alignment: AlignmentTween(
+                                begin: Alignment.topCenter,
+                                end: Alignment.bottomCenter,
+                              ).animate(animation),
+                              child: child,
+                            ),
+                          );
+                        },
                         builder: (context, animation, secondaryAnimation) {
                           return AlertDialog(
                             title: const Text('Hello'),
@@ -236,20 +236,19 @@ class _MyHomePageState extends State<MyHomePage> {
                     manager.show(
                       context,
                       SimpleTransitionRouteConfig(
-                        transitionBuilder:
-                            (context, animation, secondaryAnimation, child) {
-                              return ScaleTransition(
-                                scale: animation,
-                                child: AlignTransition(
-                                  alignment: AlignmentTween(
-                                    begin: Alignment.topCenter,
-                                    end: Alignment.center,
-                                  ).animate(animation),
+                        transitionBuilder: (context, animation, secondaryAnimation, child) {
+                          return ScaleTransition(
+                            scale: animation,
+                            child: AlignTransition(
+                              alignment: AlignmentTween(
+                                begin: Alignment.topCenter,
+                                end: Alignment.center,
+                              ).animate(animation),
 
-                                  child: child,
-                                ),
-                              );
-                            },
+                              child: child,
+                            ),
+                          );
+                        },
                         builder: (context, animation, secondaryAnimation) {
                           return Material(
                             type: MaterialType.transparency,
@@ -314,33 +313,32 @@ class _MyHomePageState extends State<MyHomePage> {
                   context,
                   SimpleTransitionRouteConfig(
                     transitionDuration: const Duration(seconds: 2),
-                    transitionBuilder:
-                        (context, animation, secondaryAnimation, child) {
-                          final alignment =
-                              AlignmentTween(
-                                begin: Alignment.topLeft,
-                                end: Alignment.bottomRight,
-                              ).animate(
-                                CurvedAnimation(
-                                  parent: animation,
-                                  curve: const Interval(
-                                    0.0,
-                                    0.5,
-                                    curve: Curves.easeInOut,
-                                  ),
-                                ),
-                              );
-
-                          final scale = Tween(
-                            begin: 1.0,
-                            end: 0.0,
-                          ).animate(animation);
-
-                          return AlignTransition(
-                            alignment: alignment,
-                            child: ScaleTransition(scale: scale, child: child),
+                    transitionBuilder: (context, animation, secondaryAnimation, child) {
+                      final alignment =
+                          AlignmentTween(
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                          ).animate(
+                            CurvedAnimation(
+                              parent: animation,
+                              curve: const Interval(
+                                0.0,
+                                0.5,
+                                curve: Curves.easeInOut,
+                              ),
+                            ),
                           );
-                        },
+
+                      final scale = Tween(
+                        begin: 1.0,
+                        end: 0.0,
+                      ).animate(animation);
+
+                      return AlignTransition(
+                        alignment: alignment,
+                        child: ScaleTransition(scale: scale, child: child),
+                      );
+                    },
                     builder: (context, animation, secondaryAnimation) {
                       return Material(
                         type: MaterialType.transparency,
@@ -388,8 +386,7 @@ class _MyHomePageState extends State<MyHomePage> {
                             onPanEnd: (details) {
                               final globalPosition = details.globalPosition;
 
-                              if (globalPosition.dx < 0 ||
-                                  globalPosition.dy < 0) {
+                              if (globalPosition.dx < 0 || globalPosition.dy < 0) {
                                 manager.hide();
                                 return;
                               }

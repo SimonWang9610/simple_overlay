@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:simple_overlay_kit/src/panel/model/panel.dart';
+import 'package:simple_overlay_kit/src/panel/model/resize_direction.dart';
 
 abstract interface class PanelViewController extends ValueListenable<PanelSettings> {
   void minimize();
@@ -8,7 +9,9 @@ abstract interface class PanelViewController extends ValueListenable<PanelSettin
   void restore();
 
   void move(double dx, double dy);
-  void resize(double width, double height);
+  void resize(Offset delta, ResizeDirection direction);
+
+  set title(String? newTitle);
 
   void bringToFront();
 
@@ -24,14 +27,15 @@ abstract interface class PanelViewController extends ValueListenable<PanelSettin
   }) = _ViewControllerImpl;
 
   factory PanelViewController.fromPanel(
-    Panel panel, {
+    Object panelId, {
+    required PanelSettings initialSettings,
     required PanelViewDelegate delegate,
     PanelBounds? initialBounds,
   }) {
     return _ViewControllerImpl(
-      panel.id,
+      panelId,
       delegate: delegate,
-      initialSettings: panel.settings,
+      initialSettings: initialSettings,
       initialBounds: initialBounds,
     );
   }
@@ -80,18 +84,26 @@ final class _ViewControllerImpl extends ChangeNotifier implements PanelViewContr
     delegate.onPanelClosed(panelId);
   }
 
+  @override
+  set title(String? newTitle) {
+    if (newTitle != _settings.title) {
+      _settings = _settings.copyWith(title: newTitle);
+      notifyListeners();
+    }
+  }
+
   PanelGeometry? _restorableGeometry;
 
   @override
   void maximize() {
     _restorableGeometry = _settings.geometry;
+
     _settings = PanelSettings(
       title: _settings.title,
-      geometry: _settings.geometry.copyWith(
-        origin: _settings.geometry.origin,
-        size: _settings.geometry.size,
-      ),
+      geometry: _bounds?.maximumGeometry ?? _settings.geometry,
+      mode: PanelViewMode.maximized,
     );
+
     delegate.onPanelMaximize(panelId);
     notifyListeners();
   }
@@ -99,7 +111,9 @@ final class _ViewControllerImpl extends ChangeNotifier implements PanelViewContr
   @override
   void minimize() {
     _restorableGeometry = _settings.geometry;
+    _settings = _settings.copyWith(mode: PanelViewMode.minimized);
     delegate.onPanelMinimize(panelId);
+    notifyListeners();
   }
 
   @override
@@ -107,8 +121,11 @@ final class _ViewControllerImpl extends ChangeNotifier implements PanelViewContr
     if (_restorableGeometry != null) {
       _settings = _settings.copyWith(geometry: _restorableGeometry);
       _restorableGeometry = null;
-      notifyListeners();
     }
+
+    _settings = _settings.copyWith(mode: PanelViewMode.normal);
+
+    notifyListeners();
 
     delegate.onPanelRestore(panelId);
   }
@@ -124,15 +141,11 @@ final class _ViewControllerImpl extends ChangeNotifier implements PanelViewContr
   }
 
   @override
-  void resize(double width, double height) {
-    final newSize = _settings.geometry.size + Offset(width, height);
-    final newGeometry = _settings.geometry.copyWith(size: newSize);
+  void resize(Offset delta, ResizeDirection direction) {
+    final newGeometry = _settings.geometry.resize(delta, direction);
+    final newSettings = _settings.copyWith(geometry: newGeometry);
 
-    final newSettings = _settings.copyWith(
-      geometry: _bounds != null ? _bounds!.clamp(newGeometry) : newGeometry,
-    );
-
-    if (newSettings.geometry != _settings.geometry) {
+    if (_settings != newSettings) {
       _settings = newSettings;
       notifyListeners();
     }
