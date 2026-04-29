@@ -6,6 +6,7 @@ import 'package:simple_overlay_kit/src/panel/model/panel.dart';
 import 'panel_view_controller.dart';
 
 abstract base class PanelController extends ChangeNotifier {
+  PanelBounds? get bounds;
   set bounds(PanelBounds? newBounds);
 
   void open(Panel panel);
@@ -21,6 +22,8 @@ abstract base class PanelController extends ChangeNotifier {
   Object? get focusedPanel;
 
   List<PanelViewEntry> get panels;
+
+  List<PanelViewEntry> get unorderedPanels;
 
   bool get hasPanels;
 
@@ -69,6 +72,9 @@ final class _PanelControllerImpl extends PanelController with _PanelViewDelegate
   PanelBounds? _bounds;
 
   @override
+  PanelBounds? get bounds => _bounds;
+
+  @override
   set bounds(PanelBounds? newBounds) {
     _bounds = newBounds;
     for (final panel in _panels.values) {
@@ -91,13 +97,18 @@ final class _PanelControllerImpl extends PanelController with _PanelViewDelegate
   }
 
   @override
+  List<PanelViewEntry> get unorderedPanels {
+    return List.unmodifiable(_panels.values);
+  }
+
+  @override
   void open(Panel panel) {
     assert(
       !_panels.containsKey(panel.id),
       'A panel with id "${panel.id}" is already registered.',
     );
 
-    final settings = panel.getInitialSettings(_findCandidatePosition());
+    final settings = panel.getInitialSettings(_findCandidatePosition(), "Untitled-${_panels.length}");
 
     _panels[panel.id] = PanelViewEntry(
       id: panel.id,

@@ -24,9 +24,9 @@ class Panel {
     this.maintainState = true,
   });
 
-  PanelSettings getInitialSettings(Offset defaultOrigin) {
+  PanelSettings getInitialSettings(Offset defaultOrigin, String defaultTitle) {
     return PanelSettings(
-      title: title,
+      title: title ?? defaultTitle,
       mode: initialMode ?? PanelViewMode.normal,
       geometry: PanelGeometry(
         origin: initialPosition ?? defaultOrigin,

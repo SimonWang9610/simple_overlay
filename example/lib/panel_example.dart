@@ -35,6 +35,12 @@ class _FloatingPanelExampleState extends State<FloatingPanelExample> {
               },
               child: const Text('Show Panel'),
             ),
+            const Spacer(),
+            if (_panelController != null)
+              Align(
+                alignment: Alignment.centerLeft,
+                child: FloatingPanelDock(controller: _panelController!),
+              ),
           ],
         ),
       ),
@@ -67,6 +73,8 @@ class _FloatingPanelExampleState extends State<FloatingPanelExample> {
         builder: (_, c) => _PanelWidget(controller: c),
       ),
     );
+
+    setState(() {});
   }
 }
 

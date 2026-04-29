@@ -49,22 +49,31 @@ class AutoResizeGrid extends StatelessWidget {
 
         final itemHeight = (constraints.maxHeight - verticalSpacing * (row - 1)) / (row == 0 ? 1 : row);
 
-        assert(
-          itemHeight > 0,
-          'Calculated item height must be greater than 0.',
-        );
+        final itemWidths = <int, double>{};
+
+        for (int i = 0; i < row; i++) {
+          final availableWidth = constraints.maxWidth - horizontalSpacing * (grid[i].length - 1);
+          final itemWidth = availableWidth / (grid[i].isEmpty ? 1 : grid[i].length);
+          itemWidths[i] = itemWidth;
+        }
 
         return Column(
           spacing: verticalSpacing,
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            for (final r in grid)
+            for (int i = 0; i < grid.length; i++)
               SizedBox(
                 height: itemHeight,
                 child: Row(
                   spacing: horizontalSpacing,
                   mainAxisAlignment: MainAxisAlignment.center,
-                  children: [for (final item in r) Flexible(child: item)],
+                  children: [
+                    for (int j = 0; j < grid[i].length; j++)
+                      SizedBox(
+                        width: itemWidths[i],
+                        child: grid[i][j],
+                      )
+                  ],
                 ),
               ),
           ],

@@ -49,6 +49,7 @@ abstract interface class PanelViewDelegate {
   void onPanelFocused(Object panelId);
 }
 
+// TODO: constrain PanelGeometry inside PanelBounds
 final class _ViewControllerImpl extends ChangeNotifier implements PanelViewController {
   final Object panelId;
   final PanelViewDelegate delegate;
@@ -70,8 +71,8 @@ final class _ViewControllerImpl extends ChangeNotifier implements PanelViewContr
 
   @override
   set bounds(PanelBounds? bounds) {
+    if (_bounds == bounds) return;
     _bounds = bounds;
-    // todo: apply bounds constraints to current geometry and update if needed
   }
 
   @override
