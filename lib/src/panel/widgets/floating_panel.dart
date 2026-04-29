@@ -1,8 +1,5 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:simple_overlay_kit/simple_overlay_kit.dart';
-import 'package:simple_overlay_kit/src/panel/panel_controller.dart';
-import 'package:simple_overlay_kit/src/panel/model/panel.dart';
 import 'package:simple_overlay_kit/src/panel/widgets/auto_resize_grid.dart';
 import 'package:simple_overlay_kit/src/panel/widgets/panel_cache_key_store.dart';
 import 'package:simple_overlay_kit/src/panel/widgets/panel_view.dart';
@@ -40,21 +37,22 @@ class FloatingPanel extends StatelessWidget {
       child: ListenableBuilder(
         listenable: controller,
         builder: (_, __) {
-          final panels = controller.panels;
-
-          if (panels.isEmpty) {
+          if (!controller.hasPanels) {
             return const SizedBox.shrink();
           }
 
           return switch (controller.mode) {
             PanelMode.window => _PanelWindow(
                 controller: controller,
-                panels: panels,
+                panels: controller.panels,
               ),
             PanelMode.preview => Center(
                 child: _PanelGrid(
                   focusedPanelId: controller.focusedPanel,
-                  panels: panels,
+                  panels: controller.unorderedPanels,
+                  onPanelTap: () {
+                    controller.mode = PanelMode.window;
+                  },
                 ),
               ),
           };
@@ -117,43 +115,67 @@ class _PanelWindow extends StatelessWidget {
   }
 }
 
-class _PanelGrid extends StatefulWidget {
+class _PanelGrid extends StatelessWidget {
   final Object? focusedPanelId;
+  final VoidCallback? onPanelTap;
   final List<PanelViewEntry> panels;
 
   const _PanelGrid({
     this.focusedPanelId,
+    this.onPanelTap,
     required this.panels,
   });
 
   @override
-  State<_PanelGrid> createState() => _PanelGridState();
-}
-
-class _PanelGridState extends State<_PanelGrid> {
-  @override
   Widget build(BuildContext context) {
-    return AutoResizeGrid(
-      children: [
-        for (final entry in widget.panels.reversed)
-          Material(
-            elevation: entry.id == widget.focusedPanelId ? 8 : 2,
-            shape: RoundedRectangleBorder(
-              side: entry.id == widget.focusedPanelId ? BorderSide(width: 2) : BorderSide.none,
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: FittedBox(
-              fit: BoxFit.scaleDown,
-              child: SizedBox.fromSize(
-                size: entry.controller.value.geometry.size,
-                child: PanelView(
-                  key: PanelCacheKeyStore.getCacheKeyForPanel(context, entry.id),
-                  entry: entry,
+    final screenSize = MediaQuery.sizeOf(context);
+
+    return SizedBox.fromSize(
+      size: screenSize * 0.8,
+      child: AutoResizeGrid(
+        children: [
+          for (final entry in panels.reversed)
+            Material(
+              elevation: entry.id == focusedPanelId ? 8 : 2,
+              shape: RoundedRectangleBorder(
+                side: entry.id == focusedPanelId ? BorderSide(width: 2) : BorderSide.none,
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: InkWell(
+                onHover: (value) {
+                  if (value) {
+                    entry.controller.bringToFront();
+                  }
+                },
+                onTap: () {
+                  print('Panel ${entry.id} tapped. Current mode: ${entry.controller.value.mode}');
+                  entry.controller.bringToFront();
+                  onPanelTap?.call();
+                },
+                child: LayoutBuilder(
+                  builder: (context, constraints) {
+                    final gridCellSize = Size(constraints.maxWidth, constraints.maxHeight);
+                    final panelSize = entry.controller.value.geometry.size;
+
+                    return SizedBox.fromSize(
+                      size: gridCellSize,
+                      child: Center(
+                        child: SizedBox.fromSize(
+                          size: panelSize,
+                          child: PanelView(
+                            key: PanelCacheKeyStore.getCacheKeyForPanel(context, entry.id),
+                            enabled: false,
+                            entry: entry,
+                          ),
+                        ),
+                      ),
+                    );
+                  },
                 ),
               ),
             ),
-          ),
-      ],
+        ],
+      ),
     );
   }
 }

@@ -56,6 +56,8 @@ class AutoResizeGrid extends StatelessWidget {
           final itemWidth = availableWidth / (grid[i].isEmpty ? 1 : grid[i].length);
           itemWidths[i] = itemWidth;
         }
+        print(
+            'AutoResizeGrid - Constraints: ${constraints.biggest}, Item Height: $itemHeight, Item Widths: $itemWidths');
 
         return Column(
           spacing: verticalSpacing,

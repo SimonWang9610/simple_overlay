@@ -216,7 +216,7 @@ base mixin _PanelModeNotifier on PanelController {
   @override
   set mode(PanelMode newMode) {
     if (_mode == newMode) return;
-
+    print('mode changed: $_mode -> $newMode');
     _mode = newMode;
     notifyListeners();
   }
