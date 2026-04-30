@@ -10,10 +10,6 @@ GlobalKey _defaultCacheKeyGetter(Object panelId) => GlobalKey(debugLabel: "cache
 ///
 /// If no key is found for a panel, the store will return null,
 /// and the panel widget may be recreated (re-mounted) from scratch when needed.
-///
-/// Typically, [DashboardMutatingStateMixin] will work with the store to
-/// keep panels alive when mutating the layout,
-/// by assigning cache keys to panels and providing them to panel widgets like [DraggablePanelWidget].
 class PanelCacheKeyStore extends InheritedWidget {
   /// A map from panel id to cache key.
   final Map<Object, GlobalKey> cacheKeys;

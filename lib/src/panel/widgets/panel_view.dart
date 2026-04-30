@@ -83,7 +83,11 @@ class _PanelViewState extends State<PanelView> {
           builder: (_, cursor, child) {
             return MouseRegion(
               cursor: cursor,
-              onExit: (event) => _reset(),
+              onExit: (event) {
+                if (!_gestureActive) {
+                  _reset();
+                }
+              },
               onHover: (event) {
                 if (!_gestureActive) {
                   _updateCursor(event.localPosition);
@@ -131,18 +135,18 @@ class _PanelViewState extends State<PanelView> {
 extension on ResizeDirection {
   MouseCursor get cursor {
     switch (this) {
-      case ResizeDirection.up:
-      case ResizeDirection.down:
+      case ResizeDirection.up || ResizeDirection.down:
         return SystemMouseCursors.resizeUpDown;
-      case ResizeDirection.left:
-      case ResizeDirection.right:
+      case ResizeDirection.left || ResizeDirection.right:
         return SystemMouseCursors.resizeLeftRight;
       case ResizeDirection.topLeft:
+        return SystemMouseCursors.resizeUpLeftDownRight;
       case ResizeDirection.bottomRight:
         return SystemMouseCursors.resizeUpLeftDownRight;
       case ResizeDirection.topRight:
-      case ResizeDirection.bottomLeft:
         return SystemMouseCursors.resizeUpRightDownLeft;
+      case ResizeDirection.bottomLeft:
+        return SystemMouseCursors.resizeDownLeft;
     }
   }
 }

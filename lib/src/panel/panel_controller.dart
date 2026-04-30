@@ -1,9 +1,7 @@
 import 'package:flutter/widgets.dart';
+import 'package:simple_overlay_kit/simple_overlay_kit.dart';
 import 'package:simple_overlay_kit/src/panel/mixins/panel_shower.dart';
 import 'package:simple_overlay_kit/src/panel/mixins/z_index_manager.dart';
-import 'package:simple_overlay_kit/src/panel/model/panel.dart';
-
-import 'panel_view_controller.dart';
 
 abstract base class PanelController extends ChangeNotifier {
   PanelBounds? get bounds;
