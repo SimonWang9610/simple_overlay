@@ -1,5 +1,7 @@
 import 'package:equatable/equatable.dart';
-import 'package:simple_overlay_kit/simple_overlay_kit.dart';
+
+import 'enums.dart';
+import 'panel_geometry.dart';
 
 class PanelViewState extends Equatable {
   final String? title;

@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:simple_overlay_kit/panels.dart';
 import 'package:simple_overlay_kit/simple_overlay_kit.dart';
 
 class FloatingPanelExample extends StatefulWidget {

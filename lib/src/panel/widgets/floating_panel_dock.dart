@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:simple_overlay_kit/simple_overlay_kit.dart';
+import 'package:simple_overlay_kit/panels.dart';
 
 typedef PanelDockWidgetBuilder = Widget Function(
   BuildContext context,

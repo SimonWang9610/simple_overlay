@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:simple_overlay_kit/simple_overlay_kit.dart';
+import 'package:simple_overlay_kit/panels.dart';
 
 import 'package:simple_overlay_kit/src/panel/widgets/auto_resize_grid.dart';
 import 'package:simple_overlay_kit/src/panel/widgets/panel_cache_key_store.dart';
