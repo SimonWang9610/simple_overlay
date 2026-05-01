@@ -170,6 +170,8 @@ final class _PanelControllerImpl extends PanelController with _PanelViewDelegate
 
   @override
   void closeAll() {
+    if (_panels.isEmpty) return;
+
     final panels = _panels.values.toList();
     _panels.clear();
 

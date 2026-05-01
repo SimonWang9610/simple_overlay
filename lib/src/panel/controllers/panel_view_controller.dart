@@ -1,7 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:simple_overlay_kit/panels.dart';
-import 'package:simple_overlay_kit/src/panel/model/panel_view_state.dart';
 import 'package:simple_overlay_kit/src/panel/model/resize_direction.dart';
 
 /// Controller for individual panel views, allowing manipulation of the panel's state and geometry.
