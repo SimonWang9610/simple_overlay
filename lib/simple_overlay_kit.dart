@@ -9,7 +9,7 @@ export 'src/panel/model/panel.dart';
 export 'src/panel/model/panel_geometry.dart';
 export 'src/panel/model/enums.dart';
 
-export 'src/panel/panel_view_controller.dart';
-export 'src/panel/panel_controller.dart';
+export 'src/panel/controllers/panel_view_controller.dart';
+export 'src/panel/controllers/panel_controller.dart';
 export 'src/panel/widgets/floating_panel.dart';
 export 'src/panel/widgets/floating_panel_dock.dart';

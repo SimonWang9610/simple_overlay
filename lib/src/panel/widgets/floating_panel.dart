@@ -85,7 +85,7 @@ class _PanelScope extends InheritedWidget {
 class _PanelWindow extends StatelessWidget {
   final PanelController controller;
   final Object? focusedPanelId;
-  final List<PanelViewEntry> panels;
+  final Iterable<PanelViewEntry> panels;
 
   const _PanelWindow({
     required this.controller,
@@ -132,7 +132,7 @@ class _PanelWindow extends StatelessWidget {
 class _PanelGrid extends StatelessWidget {
   final Object? focusedPanelId;
   final VoidCallback? onPanelTap;
-  final List<PanelViewEntry> panels;
+  final Iterable<PanelViewEntry> panels;
 
   const _PanelGrid({
     this.focusedPanelId,
@@ -148,7 +148,7 @@ class _PanelGrid extends StatelessWidget {
       size: screenSize * 0.8,
       child: AutoResizeGrid(
         children: [
-          for (final entry in panels.reversed)
+          for (final entry in panels)
             Material(
               elevation: entry.id == focusedPanelId ? 8 : 2,
               shape: RoundedRectangleBorder(

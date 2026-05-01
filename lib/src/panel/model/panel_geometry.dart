@@ -23,6 +23,12 @@ class PanelGeometry extends Equatable {
 
   Rect get rect => origin & size;
 
+  PanelGeometry move(double dx, double dy) {
+    return copyWith(
+      origin: origin + Offset(dx, dy),
+    );
+  }
+
   PanelGeometry resize(Offset delta, ResizeDirection direction) {
     double newX = origin.dx;
     double newY = origin.dy;
@@ -50,73 +56,111 @@ class PanelGeometry extends Equatable {
   List<Object?> get props => [origin, size];
 }
 
-class PanelBounds extends Equatable {
+class PanelConstraints extends Equatable {
   final Size minSize;
-  final Size maxSize;
-  final Offset topleft;
+  final Size? maxSize;
+  final Size screenSize;
+  final double edgeVisibleThreshold;
 
-  const PanelBounds({
+  const PanelConstraints({
     required this.minSize,
-    required this.maxSize,
-    this.topleft = Offset.zero,
-  });
+    this.maxSize,
+    required this.screenSize,
+    this.edgeVisibleThreshold = 20,
+  })  : assert(maxSize == null || (maxSize > minSize), 'maxSize must be greater than or equal to minSize'),
+        assert(edgeVisibleThreshold >= 0, 'edgeVisibleThreshold must be non-negative');
 
-  factory PanelBounds.from(
-    BuildContext context, {
-    double minWidth = 100,
-    double minHeight = 100,
-    double scale = 1.0,
+  factory PanelConstraints.scale(
+    Size screenSize, {
+    double minSizeRatio = 0.2,
+    double maxSizeRatio = 1.0,
+    double edgeVisibleThreshold = 20,
   }) {
-    final fullSize = MediaQuery.sizeOf(context);
-    final maxSize = fullSize * scale;
+    assert(minSizeRatio >= 0 && minSizeRatio <= 1, 'minSizeRatio must be between 0 and 1');
+    assert(maxSizeRatio >= 0 && maxSizeRatio <= 1, 'maxSizeRatio must be between 0 and 1');
+    assert(minSizeRatio <= maxSizeRatio, 'minSizeRatio must be less than or equal to maxSizeRatio');
+    assert(edgeVisibleThreshold >= 0, 'edgeVisibleThreshold must be non-negative');
 
-    final topLeft = Offset(
-      (fullSize.width - maxSize.width) / 2,
-      (fullSize.height - maxSize.height) / 2,
-    );
-
-    return PanelBounds(
-      minSize: Size(minWidth, minHeight),
-      maxSize: maxSize,
-      topleft: topLeft,
+    return PanelConstraints(
+      minSize: screenSize * minSizeRatio,
+      maxSize: screenSize * maxSizeRatio,
+      screenSize: screenSize,
+      edgeVisibleThreshold: edgeVisibleThreshold,
     );
   }
 
-  PanelBounds copyWith({
-    Size? minSize,
-    Size? maxSize,
-    Offset? topleft,
-  }) {
-    return PanelBounds(
-      minSize: minSize ?? this.minSize,
-      maxSize: maxSize ?? this.maxSize,
-      topleft: topleft ?? this.topleft,
+  @override
+  List<Object?> get props => [minSize, maxSize, screenSize, edgeVisibleThreshold];
+
+  /// The top-left position to place a panel who is in the [PanelViewMode.maximized] mode.
+  Offset get topleft {
+    if (maxSize == null) {
+      return Offset.zero;
+    }
+
+    return Offset(
+      (screenSize.width - maxSize!.width) / 2,
+      (screenSize.height - maxSize!.height) / 2,
     );
   }
+
+  Rect get screenRect => Offset.zero & screenSize;
 
   PanelGeometry get maximumGeometry {
     return PanelGeometry(
       origin: topleft,
-      size: maxSize,
+      size: maxSize ?? screenSize,
     );
   }
 
-  PanelGeometry get minimumGeometry {
-    return PanelGeometry(
-      origin: topleft,
-      size: minSize,
+  double constrainWidth(double width) {
+    return width.clamp(minSize.width, maxSize?.width ?? screenSize.width);
+  }
+
+  double constrainHeight(double height) {
+    return height.clamp(minSize.height, maxSize?.height ?? screenSize.height);
+  }
+
+  Size constrainSize(Size size) {
+    return Size(
+      constrainWidth(size.width),
+      constrainHeight(size.height),
     );
   }
 
-  PanelGeometry clamp(PanelGeometry geometry) {
-    final clampedSize = Size(
-      geometry.size.width.clamp(minSize.width, maxSize.width),
-      geometry.size.height.clamp(minSize.height, maxSize.height),
+  PanelGeometry constrain(PanelGeometry geometry) {
+    final constrainedSize = constrainSize(geometry.size);
+
+    final constrainedGeometry = PanelGeometry(
+      origin: geometry.origin,
+      size: constrainedSize,
     );
 
-    return PanelGeometry(origin: geometry.origin, size: clampedSize);
-  }
+    final constrainedRect = constrainedGeometry.rect;
 
-  @override
-  List<Object?> get props => [minSize, maxSize, topleft];
+    final intersected = constrainedRect.intersect(screenRect.deflate(edgeVisibleThreshold));
+
+    if (!intersected.isEmpty) {
+      return constrainedGeometry;
+    }
+
+    double dx = constrainedGeometry.origin.dx;
+    double dy = constrainedGeometry.origin.dy;
+
+    if (constrainedRect.right - edgeVisibleThreshold < screenRect.left) {
+      dx = screenRect.left + edgeVisibleThreshold - constrainedRect.width;
+    } else if (constrainedRect.left + edgeVisibleThreshold > screenRect.right) {
+      dx = screenRect.right - edgeVisibleThreshold;
+    }
+
+    if (constrainedRect.bottom - edgeVisibleThreshold < screenRect.top) {
+      dy = screenRect.top + edgeVisibleThreshold - constrainedRect.height;
+    } else if (constrainedRect.top + edgeVisibleThreshold > screenRect.bottom) {
+      dy = screenRect.bottom - edgeVisibleThreshold;
+    }
+
+    return constrainedGeometry.copyWith(
+      origin: Offset(dx, dy),
+    );
+  }
 }

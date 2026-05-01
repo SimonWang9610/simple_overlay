@@ -60,10 +60,7 @@ class _FloatingPanelExampleState extends State<FloatingPanelExample> {
   }
 
   void _showPanel() {
-    _panelController ??= PanelController(
-      context,
-      initialBounds: PanelBounds.from(context, scale: 0.8),
-    );
+    _panelController ??= PanelController(context);
 
     _panelController!.open(
       Panel(

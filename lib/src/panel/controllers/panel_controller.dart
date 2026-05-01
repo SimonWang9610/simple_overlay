@@ -1,36 +1,40 @@
 import 'package:flutter/widgets.dart';
 import 'package:simple_overlay_kit/simple_overlay_kit.dart';
-import 'package:simple_overlay_kit/src/panel/mixins/panel_shower.dart';
-import 'package:simple_overlay_kit/src/panel/mixins/z_index_manager.dart';
+import 'package:simple_overlay_kit/src/panel/controllers/panel_shower.dart';
+import 'package:simple_overlay_kit/src/panel/controllers/z_index_manager.dart';
 
 abstract base class PanelController extends ChangeNotifier {
-  PanelBounds? get bounds;
-  set bounds(PanelBounds? newBounds);
+  PanelConstraints get constraints;
+  set constraints(PanelConstraints newConstraints);
 
   void open(Panel panel);
   void close(Object panelId);
   void closeAll();
   void bringToFront(Object panelId);
 
+  /// Checks if the panel with the given id is currently visible (i.e., not minimized).
   bool isVisible(Object panelId);
 
   PanelMode get mode;
   set mode(PanelMode newMode);
 
+  /// Returns the id of the currently focused panel, or null if no panel is focused.
   Object? get focusedPanel;
 
-  List<PanelViewEntry> get panels;
+  /// Returns panels in z-order (from back to front).
+  Iterable<PanelViewEntry> get panels;
 
-  List<PanelViewEntry> get unorderedPanels;
+  /// Returns panels in the order they were added, regardless of z-order.
+  Iterable<PanelViewEntry> get unorderedPanels;
 
+  /// Whether there is at least one panel currently open.
   bool get hasPanels;
 
   PanelController._();
 
   factory PanelController(
     BuildContext context, {
-    Panel? initialPanel,
-    PanelBounds? initialBounds,
+    PanelConstraints? initialConstraints,
     PanelMode initialMode,
   }) = _PanelControllerImpl;
 }
@@ -38,14 +42,13 @@ abstract base class PanelController extends ChangeNotifier {
 final class _PanelControllerImpl extends PanelController with _PanelViewDelegateImpl, _PanelModeNotifier {
   _PanelControllerImpl(
     this.context, {
-    Panel? initialPanel,
-    PanelBounds? initialBounds,
+    PanelConstraints? initialConstraints,
     PanelMode initialMode = PanelMode.window,
   }) : super._() {
     _mode = initialMode;
-    _bounds = initialBounds;
 
-    if (initialPanel != null) open(initialPanel);
+    final screenSize = MediaQuery.sizeOf(context);
+    _constraints = initialConstraints ?? PanelConstraints.scale(screenSize);
   }
 
   final BuildContext context;
@@ -67,16 +70,16 @@ final class _PanelControllerImpl extends PanelController with _PanelViewDelegate
     return topmost;
   }
 
-  PanelBounds? _bounds;
+  late PanelConstraints _constraints;
 
   @override
-  PanelBounds? get bounds => _bounds;
+  PanelConstraints get constraints => _constraints;
 
   @override
-  set bounds(PanelBounds? newBounds) {
-    _bounds = newBounds;
+  set constraints(PanelConstraints newConstraints) {
+    _constraints = newConstraints;
     for (final panel in _panels.values) {
-      panel.controller.bounds = newBounds;
+      panel.controller.constraints = newConstraints;
     }
   }
 
@@ -90,13 +93,13 @@ final class _PanelControllerImpl extends PanelController with _PanelViewDelegate
   bool get hasPanels => _panels.isNotEmpty;
 
   @override
-  List<PanelViewEntry> get panels {
-    return List.unmodifiable(_zIndices.ordered.map((id) => _panels[id]!));
+  Iterable<PanelViewEntry> get panels {
+    return _zIndices.ordered.map((id) => _panels[id]!);
   }
 
   @override
-  List<PanelViewEntry> get unorderedPanels {
-    return List.unmodifiable(_panels.values);
+  Iterable<PanelViewEntry> get unorderedPanels {
+    return _panels.values;
   }
 
   @override
@@ -106,20 +109,23 @@ final class _PanelControllerImpl extends PanelController with _PanelViewDelegate
       'A panel with id "${panel.id}" is already registered.',
     );
 
-    final settings = panel.getInitialSettings(_findCandidatePosition(), "Untitled-${_panels.length}");
+    final state = panel.getInitialState(
+      _findCandidatePosition(),
+      "Untitled-${_panels.length}",
+    );
 
     _panels[panel.id] = PanelViewEntry(
       id: panel.id,
-      controller: PanelViewController.fromPanel(
+      controller: PanelViewController(
         panel.id,
         delegate: this,
-        initialSettings: settings,
-        initialBounds: _bounds,
+        initialState: state,
+        initialConstraints: _constraints,
       ),
       builder: panel.builder,
     );
 
-    if (settings.mode != PanelViewMode.minimized) {
+    if (state.mode != PanelViewMode.minimized) {
       _zIndices.upgrade(panel.id);
     } else {
       _zIndices.downgrade(panel.id);
@@ -184,12 +190,16 @@ final class _PanelControllerImpl extends PanelController with _PanelViewDelegate
   }
 
   Offset _findCandidatePosition() {
-    Offset candidate = _bounds?.topleft ?? Offset.zero;
+    Offset candidate = _constraints.topleft + const Offset(20, 20);
 
     final ordered = _panels.values.toList()
-      ..sort((a, b) {
-        return a.controller.value.geometry.origin.compareTo(b.controller.value.geometry.origin);
-      });
+      ..sort(
+        (a, b) {
+          return a.controller.value.geometry.origin.compareTo(b.controller.value.geometry.origin);
+        },
+      );
+
+    print('Ordered panels: ${ordered.map((e) => e.controller.value.geometry.origin).toList()}');
 
     for (final entry in ordered) {
       final geometry = entry.controller.value.geometry;
@@ -214,7 +224,6 @@ base mixin _PanelModeNotifier on PanelController {
   @override
   set mode(PanelMode newMode) {
     if (_mode == newMode) return;
-    print('mode changed: $_mode -> $newMode');
     _mode = newMode;
     notifyListeners();
   }
