@@ -22,35 +22,6 @@ enum ResizeDirection {
   bool get isBottomEdge =>
       this == ResizeDirection.down || this == ResizeDirection.bottomLeft || this == ResizeDirection.bottomRight;
 
-  bool get isHorizontal =>
-      this == ResizeDirection.left ||
-      this == ResizeDirection.right ||
-      this == ResizeDirection.topLeft ||
-      this == ResizeDirection.topRight ||
-      this == ResizeDirection.bottomLeft ||
-      this == ResizeDirection.bottomRight;
-
-  bool get isVertical =>
-      this == ResizeDirection.up ||
-      this == ResizeDirection.down ||
-      this == ResizeDirection.topLeft ||
-      this == ResizeDirection.topRight ||
-      this == ResizeDirection.bottomLeft ||
-      this == ResizeDirection.bottomRight;
-
-  ResizeDirection get opposite {
-    return switch (this) {
-      ResizeDirection.left => ResizeDirection.right,
-      ResizeDirection.right => ResizeDirection.left,
-      ResizeDirection.up => ResizeDirection.down,
-      ResizeDirection.down => ResizeDirection.up,
-      ResizeDirection.topLeft => ResizeDirection.bottomRight,
-      ResizeDirection.topRight => ResizeDirection.bottomLeft,
-      ResizeDirection.bottomLeft => ResizeDirection.topRight,
-      ResizeDirection.bottomRight => ResizeDirection.topLeft,
-    };
-  }
-
   Rect buildEdgeRect(Size size, double edgeThreshold) {
     return switch (this) {
       ResizeDirection.left => Rect.fromLTWH(
