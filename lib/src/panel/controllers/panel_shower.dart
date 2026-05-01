@@ -28,9 +28,12 @@ final class PanelShower {
       to: Navigator.of(context, rootNavigator: false).context,
     );
 
-    _floating ??= FloatingController.transition(
-      useRootNavigator: false,
-      builder: (_, __, ___) => themes.wrap(
+    _floating ??= FloatingController.overlay(
+      useRoute: true,
+      onAutoHide: () {
+        controller.closeAll();
+      },
+      builder: (_) => themes.wrap(
         PanelCacheKeyStore(
           cacheKeys: _cacheKeys,
           child: FloatingPanel(controller: controller),

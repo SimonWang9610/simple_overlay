@@ -17,9 +17,12 @@ import 'floating_config.dart';
 /// - [_OverlayEntryController]: the controller for showing and hiding [OverlayEntry].
 /// - [_OverlayRouteController]: the controller for showing and hiding [OverlayRoute].
 /// - [_TransitionRouteController]: the controller for showing and hiding [TransitionRoute].
-abstract base class FloatingController extends ChangeNotifier
-    implements ValueListenable<bool> {
-  FloatingController();
+abstract base class FloatingController extends ChangeNotifier implements ValueListenable<bool> {
+  final VoidCallback? onAutoHide;
+
+  FloatingController({
+    this.onAutoHide,
+  });
 
   /// When showing [TransitionRoute], the showing status will be set to true immediately,
   /// await [show] will complete when the route's transition animation is completed.
@@ -51,12 +54,13 @@ abstract base class FloatingController extends ChangeNotifier
     super.dispose();
   }
 
-  factory FloatingController.withConfig(FloatingConfig config) {
+  factory FloatingController.withConfig(FloatingConfig config, {VoidCallback? onAutoHide}) {
     return switch (config) {
-      final RawOverlayConfig raw => _OverlayEntryController(raw),
-      final OverlayRouteConfig route => _OverlayRouteController(route),
+      final RawOverlayConfig raw => _OverlayEntryController(raw, onAutoHide: onAutoHide),
+      final OverlayRouteConfig route => _OverlayRouteController(route, onAutoHide: onAutoHide),
       final TransitionRouteConfig transition => _TransitionRouteController(
           transition,
+          onAutoHide: onAutoHide,
         ),
     };
   }
@@ -67,6 +71,7 @@ abstract base class FloatingController extends ChangeNotifier
     bool useRootNavigator = false,
     Offset? anchorPoint,
     RouteTransitionsBuilder? transitionBuilder,
+    VoidCallback? onAutoHide,
     required RoutePageBuilder builder,
   }) {
     final config = DialogRouteConfig(
@@ -77,7 +82,7 @@ abstract base class FloatingController extends ChangeNotifier
       builder: builder,
     );
 
-    return _TransitionRouteController(config);
+    return _TransitionRouteController(config, onAutoHide: onAutoHide);
   }
 
   /// Factory constructor for creating a [SimpleTransitionRoute] with custom transition.
@@ -87,6 +92,7 @@ abstract base class FloatingController extends ChangeNotifier
     Duration transitionDuration = const Duration(milliseconds: 200),
     Duration? reverseTransitionDuration,
     RouteTransitionsBuilder? transitionBuilder,
+    VoidCallback? onAutoHide,
     required RoutePageBuilder builder,
   }) {
     final config = SimpleTransitionRouteConfig(
@@ -98,7 +104,7 @@ abstract base class FloatingController extends ChangeNotifier
       builder: builder,
     );
 
-    return _TransitionRouteController(config);
+    return _TransitionRouteController(config, onAutoHide: onAutoHide);
   }
 
   /// Factory constructor for creating an overlay.
@@ -120,6 +126,7 @@ abstract base class FloatingController extends ChangeNotifier
     bool useRoute = false,
     BarrierConfig? barrierConfig,
     OverlayTransitionBuilder? transitionBuilder,
+    VoidCallback? onAutoHide,
     required WidgetBuilder builder,
   }) {
     if (useRoute) {
@@ -131,7 +138,7 @@ abstract base class FloatingController extends ChangeNotifier
         builder: builder,
       );
 
-      return _OverlayRouteController(config);
+      return _OverlayRouteController(config, onAutoHide: onAutoHide);
     }
 
     final config = RawOverlayConfig(
@@ -144,14 +151,14 @@ abstract base class FloatingController extends ChangeNotifier
       builder: builder,
     );
 
-    return _OverlayEntryController(config);
+    return _OverlayEntryController(config, onAutoHide: onAutoHide);
   }
 }
 
 final class _OverlayEntryController extends FloatingController {
   final RawOverlayConfig config;
 
-  _OverlayEntryController(this.config);
+  _OverlayEntryController(this.config, {super.onAutoHide});
 
   OverlayEntry? _entry;
   AnimationController? _animation;
@@ -161,8 +168,7 @@ final class _OverlayEntryController extends FloatingController {
     if (value) return;
 
     if (config.transitionBuilder != null) {
-      final navigator =
-          Navigator.of(context, rootNavigator: config.rootOverlay);
+      final navigator = Navigator.of(context, rootNavigator: config.rootOverlay);
 
       _animation ??= AnimationController(
         duration: config.transitionDuration,
@@ -225,6 +231,7 @@ final class _OverlayEntryController extends FloatingController {
       _showing = true;
     } else {
       _hide();
+      onAutoHide?.call();
     }
   }
 
@@ -238,7 +245,7 @@ final class _OverlayEntryController extends FloatingController {
 final class _OverlayRouteController extends FloatingController {
   final OverlayRouteConfig config;
 
-  _OverlayRouteController(this.config);
+  _OverlayRouteController(this.config, {super.onAutoHide});
 
   OverlayRoute? _route;
 
@@ -266,6 +273,7 @@ final class _OverlayRouteController extends FloatingController {
       () {
         _route = null;
         _showing = false;
+        onAutoHide?.call();
       },
     );
 
@@ -296,7 +304,7 @@ final class _OverlayRouteController extends FloatingController {
 final class _TransitionRouteController extends FloatingController {
   final TransitionRouteConfig config;
 
-  _TransitionRouteController(this.config);
+  _TransitionRouteController(this.config, {super.onAutoHide});
 
   @override
   bool get value => _value && _route != null;
@@ -323,6 +331,7 @@ final class _TransitionRouteController extends FloatingController {
     navigator.push(_route!).whenComplete(() {
       _route = null;
       _showing = false;
+      onAutoHide?.call();
     });
 
     final completer = Completer<void>();

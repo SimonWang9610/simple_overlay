@@ -199,8 +199,6 @@ final class _PanelControllerImpl extends PanelController with _PanelViewDelegate
         },
       );
 
-    print('Ordered panels: ${ordered.map((e) => e.controller.value.geometry.origin).toList()}');
-
     for (final entry in ordered) {
       final geometry = entry.controller.value.geometry;
       final rect = geometry.rect.inflate(20);

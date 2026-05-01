@@ -28,12 +28,21 @@ class _FloatingPanelExampleState extends State<FloatingPanelExample> {
       appBar: AppBar(title: const Text('Floating Panel Example')),
       body: Center(
         child: Column(
+          spacing: 20,
           children: [
             ElevatedButton(
               onPressed: () {
                 _showPanel();
               },
               child: const Text('Show Panel'),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                if (Navigator.canPop(context)) {
+                  Navigator.pop(context);
+                }
+              },
+              child: const Text('Pop route'),
             ),
             const Spacer(),
             if (_panelController != null)
