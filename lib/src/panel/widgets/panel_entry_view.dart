@@ -30,10 +30,8 @@ class _PanelEntryViewState extends State<PanelEntryView> {
   void initState() {
     super.initState();
 
-    if (widget.entry.useBuiltInView) {
-      widget.entry.controller.addListener(_determineResizeZones);
-      _determineResizeZones();
-    }
+    widget.entry.controller.addListener(_determineResizeZones);
+    _determineResizeZones();
   }
 
   @override
@@ -42,21 +40,17 @@ class _PanelEntryViewState extends State<PanelEntryView> {
 
     if (oldWidget.entry.controller != widget.entry.controller) {
       oldWidget.entry.controller.removeListener(_determineResizeZones);
-      _resizeZones.clear();
-    }
-
-    if (widget.entry.useBuiltInView != oldWidget.entry.useBuiltInView) {
-      oldWidget.entry.controller.removeListener(_determineResizeZones);
-      _resizeZones.clear();
-
-      if (widget.entry.useBuiltInView) {
-        widget.entry.controller.addListener(_determineResizeZones);
-        _determineResizeZones();
-      }
+      widget.entry.controller.addListener(_determineResizeZones);
+      _determineResizeZones();
     }
   }
 
   void _determineResizeZones() {
+    if (!widget.entry.useBuiltInView) {
+      _resizeZones.clear();
+      return;
+    }
+
     final size = widget.entry.controller.value.geometry.size;
 
     for (final d in ResizeDirection.values) {
@@ -125,6 +119,12 @@ class _PanelEntryViewState extends State<PanelEntryView> {
   }
 
   void _updateCursor(Offset localPosition) {
+    if (_resizeZones.isEmpty) {
+      _cursor.value = MouseCursor.defer;
+      _direction = null;
+      return;
+    }
+
     for (final entry in _resizeZones.entries) {
       if (entry.value.contains(localPosition)) {
         _cursor.value = entry.key.cursor;

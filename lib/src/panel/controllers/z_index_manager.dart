@@ -38,6 +38,12 @@ final class ZIndexManager {
 
     if (removed == null) return false;
 
+    if (removed == _highest) {
+      assert(_zIndexOrder == null || _zIndexOrder!.last == id);
+
+      _highest = _zIndices.values.fold(0, (prev, element) => element > prev ? element : prev);
+    }
+
     _dirty = true;
     return true;
   }

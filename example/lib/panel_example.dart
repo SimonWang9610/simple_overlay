@@ -182,9 +182,11 @@ class _PanelWidgetState extends State<_PanelWidget> {
   void _open(BuildContext context) {
     final panelController = PanelScope.of(context);
 
+    final key = UniqueKey();
     panelController.open(
       Panel(
-        id: UniqueKey(),
+        id: key,
+        title: "Sub Panel - $key",
         maintainState: false,
         initialSize: const Size(200, 200),
         builder: (_, c) => _PanelWidget(controller: c),

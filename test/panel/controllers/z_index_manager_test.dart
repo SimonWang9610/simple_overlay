@@ -57,5 +57,19 @@ void main() {
       expect(manager.upgrade('z'), isTrue);
       expect(manager.ordered.toList(), ['z']);
     });
+
+    test("Highest index should be populated if the topmost panel is removed", () {
+      final manager = ZIndexManager();
+
+      manager.upgrade('a');
+      manager.upgrade('b');
+      manager.upgrade('c');
+
+      expect(manager.ordered.toList(), ['a', 'b', 'c']);
+
+      expect(manager.remove('c'), isTrue);
+      expect(manager.ordered.toList(), ['a', 'b']);
+      expect(manager.atTop('b'), isTrue);
+    });
   });
 }

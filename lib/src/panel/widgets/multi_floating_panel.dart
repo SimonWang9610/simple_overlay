@@ -135,6 +135,7 @@ class _PanelStack extends StatelessWidget {
       children: [
         for (final entry in panels)
           ValueListenableBuilder(
+            key: ValueKey(entry.id),
             valueListenable: entry.controller,
             builder: (_, settings, child) {
               return Positioned(

@@ -140,10 +140,10 @@ final class _PanelControllerImpl extends PanelController with _PanelViewDelegate
       builder: panel.builder,
     );
 
-    if (state.mode != PanelViewMode.minimized) {
-      _zIndices.upgrade(panel.id);
-    } else {
+    if (state.mode == PanelViewMode.minimized) {
       _zIndices.downgrade(panel.id);
+    } else {
+      _zIndices.upgrade(panel.id);
     }
 
     assert(
