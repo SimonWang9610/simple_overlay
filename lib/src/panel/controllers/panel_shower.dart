@@ -29,8 +29,12 @@ final class PanelShower {
     );
 
     _floating ??= FloatingController.overlay(
-      useRoute: true,
+      useRoute: false,
       onAutoHide: () {
+        /// when the floating widget is auto-hidden (e.g., route popped/the overlay entry is removed outside of the panel controller),
+        /// we need to close all panels to keep the state consistent,
+        /// otherwise when the floating widget is shown again,
+        /// it will still show the old panels which should have been closed.
         controller.closeAll();
       },
       builder: (_) => themes.wrap(

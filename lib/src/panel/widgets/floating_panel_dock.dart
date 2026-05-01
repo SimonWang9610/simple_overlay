@@ -32,7 +32,7 @@ class FloatingPanelDock extends StatelessWidget {
             spacing: 4,
             mainAxisSize: MainAxisSize.min,
             children: [
-              for (final entry in controller.unorderedPanels)
+              for (final entry in controller.panels)
                 builder(
                   context,
                   entry.controller,

@@ -24,6 +24,7 @@ class _FloatingPanelExampleState extends State<FloatingPanelExample> {
 
   @override
   Widget build(BuildContext context) {
+    AlertDialog();
     return Scaffold(
       appBar: AppBar(title: const Text('Floating Panel Example')),
       body: Center(
@@ -43,6 +44,24 @@ class _FloatingPanelExampleState extends State<FloatingPanelExample> {
                 }
               },
               child: const Text('Pop route'),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                showDialog(
+                  context: context,
+                  builder: (_) => AlertDialog(
+                    title: const Text('Dialog'),
+                    content: const Text('This is a dialog.'),
+                    actions: [
+                      TextButton(
+                        onPressed: () => Navigator.pop(context),
+                        child: const Text('Close'),
+                      ),
+                    ],
+                  ),
+                );
+              },
+              child: const Text('Show dialog'),
             ),
             const Spacer(),
             if (_panelController != null)

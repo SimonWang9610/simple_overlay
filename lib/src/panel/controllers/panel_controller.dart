@@ -4,6 +4,14 @@ import 'package:simple_overlay_kit/src/panel/controllers/panel_shower.dart';
 import 'package:simple_overlay_kit/src/panel/controllers/z_index_manager.dart';
 
 abstract base class PanelController extends ChangeNotifier {
+  /// Whether this controller uses an overlay to display panels.
+  /// If false, the panels are expected to be displayed in a [Route] above the current context.
+  /// If true, the controller will ensure that panels are displayed in an [Overlay] above the current context,
+  /// which will ensure panels are not overridden by other routes.
+  ///
+  /// Default to false.
+  final bool useOverlay;
+
   PanelConstraints get constraints;
   set constraints(PanelConstraints newConstraints);
 
@@ -22,20 +30,21 @@ abstract base class PanelController extends ChangeNotifier {
   Object? get focusedPanel;
 
   /// Returns panels in z-order (from back to front).
-  Iterable<PanelViewEntry> get panels;
+  Iterable<PanelViewEntry> get orderedPanels;
 
   /// Returns panels in the order they were added, regardless of z-order.
-  Iterable<PanelViewEntry> get unorderedPanels;
+  Iterable<PanelViewEntry> get panels;
 
   /// Whether there is at least one panel currently open.
   bool get hasPanels;
 
-  PanelController._();
+  PanelController._(this.useOverlay);
 
   factory PanelController(
     BuildContext context, {
     PanelConstraints? initialConstraints,
     PanelMode initialMode,
+    bool useOverlay,
   }) = _PanelControllerImpl;
 }
 
@@ -44,11 +53,16 @@ final class _PanelControllerImpl extends PanelController with _PanelViewDelegate
     this.context, {
     PanelConstraints? initialConstraints,
     PanelMode initialMode = PanelMode.window,
-  }) : super._() {
+    bool useOverlay = false,
+  }) : super._(useOverlay) {
     _mode = initialMode;
 
-    final screenSize = MediaQuery.sizeOf(context);
-    _constraints = initialConstraints ?? PanelConstraints.scale(screenSize);
+    if (initialConstraints != null) {
+      _constraints = initialConstraints;
+    } else {
+      final screenSize = MediaQuery.sizeOf(context);
+      _constraints = PanelConstraints.scale(screenSize);
+    }
   }
 
   final BuildContext context;
@@ -93,12 +107,12 @@ final class _PanelControllerImpl extends PanelController with _PanelViewDelegate
   bool get hasPanels => _panels.isNotEmpty;
 
   @override
-  Iterable<PanelViewEntry> get panels {
+  Iterable<PanelViewEntry> get orderedPanels {
     return _zIndices.ordered.map((id) => _panels[id]!);
   }
 
   @override
-  Iterable<PanelViewEntry> get unorderedPanels {
+  Iterable<PanelViewEntry> get panels {
     return _panels.values;
   }
 
