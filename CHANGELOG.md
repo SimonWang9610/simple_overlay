@@ -1,4 +1,7 @@
 
+## 1.1.0
+- Support `MultiFloatingPanel` to mimic the behavior of multiple floating windows
+
 ## 1.0.2
 
 - break change: rename `FloatingController.custom` to `FloatingController.transition` to better reflect its purpose and usage. 
