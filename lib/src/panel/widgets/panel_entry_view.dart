@@ -70,6 +70,8 @@ class _PanelEntryViewState extends State<PanelEntryView> {
   @override
   void dispose() {
     _cursor.dispose();
+    widget.entry.controller.removeListener(_determineResizeZones);
+    _resizeZones.clear();
     super.dispose();
   }
 

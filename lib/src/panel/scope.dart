@@ -20,8 +20,8 @@ class PanelScope extends InheritedWidget {
 
     if (controller == null) {
       throw FlutterError(
-        'PanelController.of() called with a context that does not contain a PanelController.\n'
-        'Make sure to wrap your widget tree with a FloatingPanel.',
+        'PanelScope.of() called with a context that does not contain a PanelScope.\n'
+        'Make sure the widget is a descendant of [MultiFloatingPanel] that is created when you call PanelController.open().',
       );
     }
 

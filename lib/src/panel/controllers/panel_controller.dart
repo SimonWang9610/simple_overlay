@@ -163,7 +163,7 @@ final class _PanelControllerImpl extends PanelController with _PanelViewDelegate
     if (removed == null) return;
 
     _zIndices.remove(panelId);
-    removed.controller.close();
+    removed.controller.dispose();
 
     notifyListeners();
   }
@@ -176,7 +176,7 @@ final class _PanelControllerImpl extends PanelController with _PanelViewDelegate
     _panels.clear();
 
     for (final p in panels) {
-      close(p.id);
+      p.controller.dispose();
     }
 
     _zIndices.reset();

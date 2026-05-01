@@ -25,7 +25,6 @@ class _FloatingPanelExampleState extends State<FloatingPanelExample> {
 
   @override
   Widget build(BuildContext context) {
-    AlertDialog();
     return Scaffold(
       appBar: AppBar(title: const Text('Floating Panel Example')),
       body: Center(

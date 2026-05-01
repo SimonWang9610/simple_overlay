@@ -24,6 +24,8 @@ abstract interface class PanelViewController extends ValueListenable<PanelViewSt
 
   void close();
 
+  void dispose();
+
   set constraints(PanelConstraints constraints);
 
   factory PanelViewController(
@@ -144,6 +146,12 @@ final class _ViewControllerImpl extends ChangeNotifier implements PanelViewContr
     _update(
       geometry: _state.geometry.resize(delta, direction),
     );
+  }
+
+  @override
+  void dispose() {
+    close();
+    super.dispose();
   }
 
   bool _update({
