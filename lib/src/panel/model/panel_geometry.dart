@@ -2,6 +2,7 @@ import 'package:equatable/equatable.dart';
 import 'package:flutter/widgets.dart';
 import 'package:simple_overlay_kit/src/panel/model/resize_direction.dart';
 
+/// Represents the geometry of a panel, including its position and size.
 class PanelGeometry extends Equatable {
   final Offset origin;
   final Size size;
@@ -56,6 +57,12 @@ class PanelGeometry extends Equatable {
   List<Object?> get props => [origin, size];
 }
 
+/// Represents the constraints for a panel, including minimum and maximum sizes,
+/// screen size, and edge visibility threshold.
+///
+/// The [edgeVisibleThreshold] defines how much of the panel must remain visible
+/// when it is moved outside the screen bounds.
+/// This ensures that users can still interact with the panel.
 class PanelConstraints extends Equatable {
   final Size minSize;
   final Size? maxSize;

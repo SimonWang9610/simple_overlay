@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:simple_overlay_kit/panels.dart';
 import 'package:simple_overlay_kit/simple_overlay_kit.dart';
+import 'package:simple_overlay_kit/src/panel/widgets/multi_floating_panel.dart';
 import 'package:simple_overlay_kit/src/panel/widgets/panel_cache_key_store.dart';
 
 final class PanelShower {
@@ -41,7 +42,7 @@ final class PanelShower {
       builder: (_) => themes.wrap(
         PanelCacheKeyStore(
           cacheKeys: _cacheKeys,
-          child: FloatingPanel(controller: controller),
+          child: MultiFloatingPanel(controller: controller),
         ),
       ),
     );

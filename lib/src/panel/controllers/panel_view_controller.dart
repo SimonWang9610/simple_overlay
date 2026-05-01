@@ -4,12 +4,19 @@ import 'package:simple_overlay_kit/panels.dart';
 import 'package:simple_overlay_kit/src/panel/model/panel_view_state.dart';
 import 'package:simple_overlay_kit/src/panel/model/resize_direction.dart';
 
+/// Controller for individual panel views, allowing manipulation of the panel's state and geometry.
+///
+/// Unlike [PanelController], which manages the collection of panels,
+/// [PanelViewController] is focused on controlling a single panel's behavior and properties.
+///
+/// They can communicate via the [PanelViewDelegate] to notify about state changes or user interactions.
 abstract interface class PanelViewController extends ValueListenable<PanelViewState> {
   void minimize();
   void maximize();
   void restore();
 
   void move(double dx, double dy);
+
   void resize(Offset delta, ResizeDirection direction);
 
   set title(String? newTitle);
@@ -36,22 +43,24 @@ abstract interface class PanelViewDelegate {
   void onPanelFocused(Object panelId);
 }
 
-// TODO: constrain PanelGeometry inside PanelBounds
 final class _ViewControllerImpl extends ChangeNotifier implements PanelViewController {
   final Object panelId;
   final PanelViewDelegate delegate;
 
   PanelConstraints _constraints;
 
-  PanelViewState _state;
+  late PanelViewState _state;
 
   _ViewControllerImpl(
     this.panelId, {
     required this.delegate,
     required PanelViewState initialState,
     required PanelConstraints initialConstraints,
-  })  : _state = initialState,
-        _constraints = initialConstraints;
+  }) : _constraints = initialConstraints {
+    _state = initialState.copyWith(
+      geometry: _constraints.constrain(initialState.geometry),
+    );
+  }
 
   @override
   PanelViewState get value => _state;
@@ -62,11 +71,7 @@ final class _ViewControllerImpl extends ChangeNotifier implements PanelViewContr
     _constraints = constraints;
 
     final geometry = _constraints.constrain(_state.geometry);
-
-    if (geometry != _state.geometry) {
-      _state = _state.copyWith(geometry: geometry);
-      notifyListeners();
-    }
+    _update(geometry: geometry);
   }
 
   @override

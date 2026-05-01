@@ -30,10 +30,10 @@ abstract base class PanelController extends ChangeNotifier {
   Object? get focusedPanel;
 
   /// Returns panels in z-order (from back to front).
-  Iterable<PanelViewEntry> get orderedPanels;
+  Iterable<PanelEntry> get orderedPanels;
 
   /// Returns panels in the order they were added, regardless of z-order.
-  Iterable<PanelViewEntry> get panels;
+  Iterable<PanelEntry> get panels;
 
   /// Whether there is at least one panel currently open.
   bool get hasPanels;
@@ -68,7 +68,7 @@ final class _PanelControllerImpl extends PanelController with _PanelViewDelegate
   final BuildContext context;
   final _zIndices = ZIndexManager();
   late final _shower = PanelShower(this);
-  final Map<Object, PanelViewEntry> _panels = {};
+  final Map<Object, PanelEntry> _panels = {};
 
   @override
   PanelMode get mode => _mode;
@@ -107,12 +107,12 @@ final class _PanelControllerImpl extends PanelController with _PanelViewDelegate
   bool get hasPanels => _panels.isNotEmpty;
 
   @override
-  Iterable<PanelViewEntry> get orderedPanels {
+  Iterable<PanelEntry> get orderedPanels {
     return _zIndices.ordered.map((id) => _panels[id]!);
   }
 
   @override
-  Iterable<PanelViewEntry> get panels {
+  Iterable<PanelEntry> get panels {
     return _panels.values;
   }
 
@@ -128,8 +128,9 @@ final class _PanelControllerImpl extends PanelController with _PanelViewDelegate
       "Untitled-${_panels.length}",
     );
 
-    _panels[panel.id] = PanelViewEntry(
+    _panels[panel.id] = PanelEntry(
       id: panel.id,
+      useBuiltInView: panel.useBuiltInView,
       controller: PanelViewController(
         panel.id,
         delegate: this,

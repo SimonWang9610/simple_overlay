@@ -181,7 +181,7 @@ class _PanelWidgetState extends State<_PanelWidget> {
   }
 
   void _open(BuildContext context) {
-    final panelController = FloatingPanel.of(context);
+    final panelController = PanelScope.of(context);
 
     panelController.open(
       Panel(

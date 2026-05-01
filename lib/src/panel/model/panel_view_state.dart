@@ -3,6 +3,7 @@ import 'package:equatable/equatable.dart';
 import 'enums.dart';
 import 'panel_geometry.dart';
 
+/// Represents the state of a panel view, including its title, mode, and geometry.
 class PanelViewState extends Equatable {
   final String? title;
   final PanelViewMode mode;

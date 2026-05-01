@@ -2,12 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:simple_overlay_kit/src/panel/model/panel.dart';
 import 'package:simple_overlay_kit/src/panel/model/resize_direction.dart';
 
-class PanelView extends StatefulWidget {
+class PanelEntryView extends StatefulWidget {
   final double resizeThreshold;
   final bool enabled;
-  final PanelViewEntry entry;
+  final PanelEntry entry;
 
-  const PanelView({
+  const PanelEntryView({
     super.key,
     this.enabled = true,
     required this.entry,
@@ -15,10 +15,10 @@ class PanelView extends StatefulWidget {
   });
 
   @override
-  State<PanelView> createState() => _PanelViewState();
+  State<PanelEntryView> createState() => _PanelEntryViewState();
 }
 
-class _PanelViewState extends State<PanelView> {
+class _PanelEntryViewState extends State<PanelEntryView> {
   final _cursor = ValueNotifier(MouseCursor.defer);
 
   final Map<ResizeDirection, Rect> _resizeZones = {};
@@ -30,18 +30,29 @@ class _PanelViewState extends State<PanelView> {
   void initState() {
     super.initState();
 
-    widget.entry.controller.addListener(_determineResizeZones);
-    _determineResizeZones();
+    if (widget.entry.useBuiltInView) {
+      widget.entry.controller.addListener(_determineResizeZones);
+      _determineResizeZones();
+    }
   }
 
   @override
-  void didUpdateWidget(covariant PanelView oldWidget) {
+  void didUpdateWidget(covariant PanelEntryView oldWidget) {
     super.didUpdateWidget(oldWidget);
 
     if (oldWidget.entry.controller != widget.entry.controller) {
       oldWidget.entry.controller.removeListener(_determineResizeZones);
-      widget.entry.controller.addListener(_determineResizeZones);
-      _determineResizeZones();
+      _resizeZones.clear();
+    }
+
+    if (widget.entry.useBuiltInView != oldWidget.entry.useBuiltInView) {
+      oldWidget.entry.controller.removeListener(_determineResizeZones);
+      _resizeZones.clear();
+
+      if (widget.entry.useBuiltInView) {
+        widget.entry.controller.addListener(_determineResizeZones);
+        _determineResizeZones();
+      }
     }
   }
 
@@ -64,9 +75,13 @@ class _PanelViewState extends State<PanelView> {
 
   @override
   Widget build(BuildContext context) {
-    return IgnorePointer(
-      ignoring: !widget.enabled,
-      child: GestureDetector(
+    Widget view = widget.entry.builder(
+      context,
+      widget.entry.controller,
+    );
+
+    if (widget.entry.useBuiltInView) {
+      view = GestureDetector(
         onTap: widget.entry.controller.bringToFront,
         onPanDown: (details) {
           widget.entry.controller.bringToFront();
@@ -96,9 +111,14 @@ class _PanelViewState extends State<PanelView> {
               child: child,
             );
           },
-          child: widget.entry.builder(context, widget.entry.controller),
+          child: view,
         ),
-      ),
+      );
+    }
+
+    return IgnorePointer(
+      ignoring: !widget.enabled,
+      child: view,
     );
   }
 
