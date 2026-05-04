@@ -138,15 +138,21 @@ class _PanelStack extends StatelessWidget {
             key: ValueKey(entry.id),
             valueListenable: entry.controller,
             builder: (_, settings, child) {
+              Widget panelView = Offstage(
+                offstage: !controller.isVisible(entry.id),
+                child: child,
+              );
+
+              if (entry.addRepaintBoundary) {
+                panelView = RepaintBoundary(child: panelView);
+              }
+
               return Positioned(
                 left: settings.geometry.origin.dx,
                 top: settings.geometry.origin.dy,
                 width: settings.geometry.size.width,
                 height: settings.geometry.size.height,
-                child: Offstage(
-                  offstage: !controller.isVisible(entry.id),
-                  child: child,
-                ),
+                child: panelView,
               );
             },
             child: Material(

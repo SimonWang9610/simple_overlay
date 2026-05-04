@@ -13,6 +13,13 @@ class Panel {
   /// it is the developer's responsibility to maintain the state externally if needed.
   final bool maintainState;
 
+  /// Whether to add a RepaintBoundary around the panel content.
+  /// If true, it can improve performance when the panel content is complex and does not need to repaint frequently;
+  /// if false, it can reduce memory usage and improve performance when the panel content is simple and needs to repaint frequently.
+  ///
+  /// Defaults to true;
+  final bool addRepaintBoundary;
+
   /// Whether to use the built-in panel view [PanelEntryView], which handles dragging and resizing.
   ///
   /// If false, it is the developer's responsibility to provide their own implementation for dragging and resizing the panel.
@@ -55,6 +62,7 @@ class Panel {
     this.initialPosition,
     required this.initialSize,
     this.maintainState = true,
+    this.addRepaintBoundary = true,
     this.useBuiltInView = true,
   });
 
@@ -73,6 +81,7 @@ class Panel {
 class PanelEntry {
   final Object id;
   final bool useBuiltInView;
+  final bool addRepaintBoundary;
   final PanelWidgetBuilder builder;
   final PanelViewController controller;
 
@@ -81,5 +90,6 @@ class PanelEntry {
     required this.builder,
     required this.controller,
     required this.useBuiltInView,
+    required this.addRepaintBoundary,
   });
 }

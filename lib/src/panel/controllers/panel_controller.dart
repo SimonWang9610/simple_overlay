@@ -131,6 +131,7 @@ final class _PanelControllerImpl extends PanelController with _PanelViewDelegate
     _panels[panel.id] = PanelEntry(
       id: panel.id,
       useBuiltInView: panel.useBuiltInView,
+      addRepaintBoundary: panel.addRepaintBoundary,
       controller: PanelViewController(
         panel.id,
         delegate: this,
