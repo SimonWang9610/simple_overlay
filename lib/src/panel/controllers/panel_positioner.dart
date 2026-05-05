@@ -6,16 +6,15 @@ abstract interface class PanelPositioner {
   Offset find(Panel panel, Iterable<PanelGeometry> others, PanelConstraints constraints);
 
   /// A positioner that always returns the origin specified in the constraints.
-  factory PanelPositioner.origin() => const _AlwaysPanelOriginPositioner();
+  const factory PanelPositioner.alwaysOrigin() = _AlwaysPanelOriginPositioner;
 
   /// A positioner that cascades panels diagonally with a specified offset, starting from the origin.
   /// If a candidate position overlaps with any existing panel (with a specified [margin]),
-  /// the positioner will keep adding [step] until it finds a non-overlapping position.
-  factory PanelPositioner.cascade({
-    Offset step = const Offset(20, 20),
-    double margin = 20,
-  }) =>
-      _OriginCascadePanelPositioner(offset: step, margin: margin);
+  /// the positioner will keep adding [offset] until it finds a non-overlapping position.
+  const factory PanelPositioner.cascade({
+    Offset offset,
+    double margin,
+  }) = _OriginCascadePanelPositioner;
 
   /// A positioner that positions the panel based on the specified alignments and offset.
   /// The [panelAlignment] specifies the point on the panel to align,
@@ -24,16 +23,11 @@ abstract interface class PanelPositioner {
   /// [offset] can be used to further adjust the position after alignment.
   ///
   /// The position calculation behaves similarly to [CompositedTransformFollower].
-  factory PanelPositioner.follow({
-    Offset offset = Offset.zero,
-    Alignment panelAlignment = Alignment.topLeft,
-    Alignment screenAlignment = Alignment.topLeft,
-  }) =>
-      _FollowPanelPositioner(
-        offset: offset,
-        panelAlignment: panelAlignment,
-        screenAlignment: screenAlignment,
-      );
+  const factory PanelPositioner.follow({
+    Offset offset,
+    Alignment panelAlignment,
+    Alignment screenAlignment,
+  }) = _FollowPanelPositioner;
 }
 
 final class _AlwaysPanelOriginPositioner implements PanelPositioner {

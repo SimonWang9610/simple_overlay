@@ -91,7 +91,6 @@ class _FloatingPanelExampleState extends State<FloatingPanelExample> {
     final screenSize = MediaQuery.sizeOf(context);
 
     _panelController ??= PanelController(
-      context,
       // initialConstraints: PanelConstraints.fromPadding(
       //   screenSize,
       //   padding: EdgeInsets.symmetric(horizontal: 40, vertical: 80),
@@ -103,6 +102,7 @@ class _FloatingPanelExampleState extends State<FloatingPanelExample> {
     );
 
     _panelController!.open(
+      context,
       Panel(
         id: 'main_panel',
         title: 'Main Panel',
@@ -196,6 +196,7 @@ class _PanelWidgetState extends State<_PanelWidget> {
 
     final key = UniqueKey();
     panelController.open(
+      context,
       Panel(
         id: key,
         title: "Sub Panel - $key",

@@ -2,7 +2,6 @@ import 'package:flutter/widgets.dart';
 import 'package:simple_overlay_kit/panels.dart';
 import 'package:simple_overlay_kit/src/panel/controllers/mixins.dart';
 import 'package:simple_overlay_kit/src/panel/controllers/panel_positioner.dart';
-import 'package:simple_overlay_kit/src/panel/controllers/panel_shower.dart';
 import 'package:simple_overlay_kit/src/panel/controllers/z_index_manager.dart';
 
 abstract base class PanelController extends ChangeNotifier {
@@ -20,7 +19,7 @@ abstract base class PanelController extends ChangeNotifier {
   PanelConfig get config;
   set config(PanelConfig newConfig);
 
-  void open(Panel panel);
+  void open(BuildContext context, Panel panel);
   void close(Object panelId);
   void closeAll();
   void bringToFront(Object panelId);
@@ -45,45 +44,33 @@ abstract base class PanelController extends ChangeNotifier {
 
   PanelController._(this.useOverlay);
 
-  factory PanelController(
-    BuildContext context, {
+  factory PanelController({
     PanelConstraints? initialConstraints,
-    PanelConfig? initialConfig,
-    PanelPositioner? positioner,
+    PanelConfig initialConfig,
+    PanelPositioner positioner,
     PanelMode initialMode,
     bool useOverlay,
   }) = _PanelControllerImpl;
 }
 
-final class _PanelControllerImpl extends PanelController with PanelViewDelegateImpl, PanelStateSetterMixin {
-  _PanelControllerImpl(
-    this.context, {
+final class _PanelControllerImpl extends PanelController
+    with PanelViewDelegateImpl, PanelStateSetterMixin, PanelShowerMixin {
+  _PanelControllerImpl({
     PanelConstraints? initialConstraints,
-    PanelConfig? initialConfig,
-    PanelPositioner? positioner,
+    PanelConfig initialConfig = const PanelConfig(),
+    PanelPositioner positioner = const PanelPositioner.cascade(),
     PanelMode initialMode = PanelMode.window,
     bool useOverlay = false,
   }) : super._(useOverlay) {
-    final PanelConstraints c;
-
-    if (initialConstraints != null) {
-      c = initialConstraints;
-    } else {
-      final screenSize = MediaQuery.sizeOf(context);
-      c = PanelConstraints.scale(screenSize);
-    }
-
     setup(
-      constraints: c,
+      constraints: initialConstraints,
       mode: initialMode,
       config: initialConfig,
       positioner: positioner,
     );
   }
 
-  final BuildContext context;
   final _zIndices = ZIndexManager();
-  late final _shower = PanelShower(this);
   final Map<Object, PanelEntry> _panels = {};
 
   @override
@@ -117,11 +104,13 @@ final class _PanelControllerImpl extends PanelController with PanelViewDelegateI
   }
 
   @override
-  void open(Panel panel) {
+  void open(BuildContext context, Panel panel) {
     assert(
       !_panels.containsKey(panel.id),
       'A panel with id "${panel.id}" is already registered.',
     );
+
+    setupContext(context);
 
     final state = panel.getInitialState(
       positioner.find(
@@ -151,14 +140,9 @@ final class _PanelControllerImpl extends PanelController with PanelViewDelegateI
       _zIndices.upgrade(panel.id);
     }
 
-    assert(
-      context.mounted,
-      'Given context is not mounted. Make sure to call PanelController.open() after the widget is built.',
-    );
-
-    _shower.ensurePanelOnstage(context, panel: panel);
-
     notifyListeners();
+
+    ensureOnstage(context, panel);
   }
 
   @override
@@ -202,7 +186,6 @@ final class _PanelControllerImpl extends PanelController with PanelViewDelegateI
   @override
   void dispose() {
     closeAll();
-    _shower.dispose();
     super.dispose();
   }
 

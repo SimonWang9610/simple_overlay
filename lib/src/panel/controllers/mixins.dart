@@ -1,5 +1,7 @@
+import 'package:flutter/widgets.dart';
 import 'package:simple_overlay_kit/panels.dart';
 import 'package:simple_overlay_kit/src/panel/controllers/panel_positioner.dart';
+import 'package:simple_overlay_kit/src/panel/controllers/panel_shower.dart';
 
 base mixin PanelViewDelegateImpl on PanelController implements PanelViewDelegate {
   @override
@@ -33,20 +35,25 @@ base mixin PanelViewDelegateImpl on PanelController implements PanelViewDelegate
 }
 
 base mixin PanelStateSetterMixin on PanelController {
-  late PanelConstraints _constraints;
+  PanelConstraints? _constraints;
 
   @override
-  PanelConstraints get constraints => _constraints;
+  PanelConstraints get constraints => _constraints!;
 
   @override
   set constraints(PanelConstraints newConstraints) {
+    if (_constraints == newConstraints) return;
+
     _constraints = newConstraints;
+
     for (final panel in panels) {
       panel.controller.constraints = newConstraints;
     }
+
+    notifyListeners();
   }
 
-  late PanelConfig _config = PanelConfig();
+  PanelConfig _config = PanelConfig();
 
   @override
   PanelConfig get config => _config;
@@ -58,7 +65,7 @@ base mixin PanelStateSetterMixin on PanelController {
     notifyListeners();
   }
 
-  late PanelMode _mode;
+  PanelMode _mode = PanelMode.window;
 
   @override
   PanelMode get mode => _mode;
@@ -71,15 +78,26 @@ base mixin PanelStateSetterMixin on PanelController {
   }
 
   void setup({
-    required PanelConstraints constraints,
-    required PanelMode mode,
+    PanelConstraints? constraints,
+    PanelMode? mode,
     PanelPositioner? positioner,
     PanelConfig? config,
   }) {
-    _constraints = constraints;
-    _mode = mode;
-    _config = config ?? PanelConfig();
-    _positioner = positioner ?? PanelPositioner.cascade();
+    if (constraints != null) {
+      _constraints = constraints;
+    }
+
+    if (mode != null) {
+      _mode = mode;
+    }
+
+    if (positioner != null) {
+      _positioner = positioner;
+    }
+
+    if (config != null) {
+      _config = config;
+    }
   }
 
   late PanelPositioner _positioner;
@@ -88,5 +106,32 @@ base mixin PanelStateSetterMixin on PanelController {
 
   set positioner(PanelPositioner newPositioner) {
     _positioner = newPositioner;
+  }
+}
+
+base mixin PanelShowerMixin on PanelController, PanelStateSetterMixin {
+  BuildContext? _context;
+
+  late final PanelShower _shower = PanelShower(this);
+
+  void ensureOnstage(BuildContext context, Panel panel) {
+    _shower.ensurePanelOnstage(_context!, panel: panel);
+  }
+
+  void setupContext(BuildContext context) {
+    if (_context == null || !_context!.mounted || !hasPanels) {
+      _context = context;
+    }
+
+    _constraints ??= PanelConstraints.scale(MediaQuery.sizeOf(context));
+
+    assert(_context != null && _context!.mounted, 'Context must be set and mounted to open panels.');
+  }
+
+  @override
+  void dispose() {
+    _context = null;
+    _shower.dispose();
+    super.dispose();
   }
 }
