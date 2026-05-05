@@ -88,7 +88,15 @@ class _FloatingPanelExampleState extends State<FloatingPanelExample> {
   }
 
   void _showPanel() {
-    _panelController ??= PanelController(context);
+    final screenSize = MediaQuery.sizeOf(context);
+
+    _panelController ??= PanelController(
+      context,
+      initialConstraints: PanelConstraints.fromPadding(
+        screenSize,
+        padding: EdgeInsets.symmetric(horizontal: 40, vertical: 80),
+      ),
+    );
 
     _panelController!.open(
       Panel(

@@ -94,7 +94,7 @@ class PanelGridFlowDelegate extends FlowDelegate {
         final top = h * (verticalSpacing + itemHeight);
 
         panelGeometries[entries[index].id] = PanelGeometry(
-          origin: Offset(left, top) + panelGeometry.origin,
+          origin: Offset(left, top),
           size: Size(avgWidth, itemHeight),
         );
       }

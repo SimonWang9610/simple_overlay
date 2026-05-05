@@ -65,17 +65,18 @@ class PanelGeometry extends Equatable {
 /// This ensures that users can still interact with the panel.
 class PanelConstraints extends Equatable {
   final Size minSize;
-  final Size? maxSize;
-  final Size screenSize;
+  final Size maxSize;
+  final Offset origin;
   final double edgeVisibleThreshold;
 
   const PanelConstraints({
     required this.minSize,
-    this.maxSize,
-    required this.screenSize,
+    required this.maxSize,
+    this.origin = Offset.zero,
     this.edgeVisibleThreshold = 20,
-  })  : assert(maxSize == null || (maxSize > minSize), 'maxSize must be greater than or equal to minSize'),
-        assert(edgeVisibleThreshold >= 0, 'edgeVisibleThreshold must be non-negative');
+  })  : assert(maxSize > minSize, 'maxSize must be greater than or equal to minSize'),
+        assert(edgeVisibleThreshold >= 0, 'edgeVisibleThreshold must be non-negative'),
+        assert(origin >= Offset.zero, 'origin must be non-negative');
 
   factory PanelConstraints.scale(
     Size screenSize, {
@@ -88,44 +89,57 @@ class PanelConstraints extends Equatable {
     assert(minSizeRatio <= maxSizeRatio, 'minSizeRatio must be less than or equal to maxSizeRatio');
     assert(edgeVisibleThreshold >= 0, 'edgeVisibleThreshold must be non-negative');
 
+    final minSize = screenSize * minSizeRatio;
+    final maxSize = screenSize * maxSizeRatio;
+
+    final origin = Offset(screenSize.width - maxSize.width, screenSize.height - maxSize.height) / 2;
+
     return PanelConstraints(
-      minSize: screenSize * minSizeRatio,
-      maxSize: screenSize * maxSizeRatio,
-      screenSize: screenSize,
+      minSize: minSize,
+      maxSize: maxSize,
+      origin: origin,
+      edgeVisibleThreshold: edgeVisibleThreshold,
+    );
+  }
+
+  factory PanelConstraints.fromPadding(
+    Size screenSize, {
+    required EdgeInsets padding,
+    double edgeVisibleThreshold = 20,
+    Size? minSize,
+  }) {
+    final origin = Offset(padding.left, padding.top);
+    final maxSize = Size(
+      screenSize.width - padding.left - padding.right,
+      screenSize.height - padding.top - padding.bottom,
+    );
+
+    return PanelConstraints(
+      minSize: minSize ?? Size.zero,
+      maxSize: maxSize,
+      origin: origin,
       edgeVisibleThreshold: edgeVisibleThreshold,
     );
   }
 
   @override
-  List<Object?> get props => [minSize, maxSize, screenSize, edgeVisibleThreshold];
+  List<Object?> get props => [minSize, maxSize, origin, edgeVisibleThreshold];
 
-  /// The top-left position to place a panel who is in the [PanelViewMode.maximized] mode.
-  Offset get topleft {
-    if (maxSize == null) {
-      return Offset.zero;
-    }
-
-    return Offset(
-      (screenSize.width - maxSize!.width) / 2,
-      (screenSize.height - maxSize!.height) / 2,
-    );
-  }
-
-  Rect get screenRect => Offset.zero & screenSize;
+  Rect get rect => origin & maxSize;
 
   PanelGeometry get maximumGeometry {
     return PanelGeometry(
-      origin: topleft,
-      size: maxSize ?? screenSize,
+      origin: origin,
+      size: maxSize,
     );
   }
 
   double constrainWidth(double width) {
-    return width.clamp(minSize.width, maxSize?.width ?? screenSize.width);
+    return width.clamp(minSize.width, maxSize.width);
   }
 
   double constrainHeight(double height) {
-    return height.clamp(minSize.height, maxSize?.height ?? screenSize.height);
+    return height.clamp(minSize.height, maxSize.height);
   }
 
   Size constrainSize(Size size) {
@@ -144,6 +158,7 @@ class PanelConstraints extends Equatable {
     );
 
     final constrainedRect = constrainedGeometry.rect;
+    final screenRect = rect;
 
     final intersected = constrainedRect.intersect(screenRect.deflate(edgeVisibleThreshold));
 

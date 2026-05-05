@@ -208,7 +208,7 @@ final class _PanelControllerImpl extends PanelController with _PanelViewDelegate
   }
 
   Offset _findCandidatePosition() {
-    Offset candidate = _constraints.topleft + const Offset(20, 20);
+    Offset candidate = _constraints.origin;
 
     final ordered = _panels.values.toList()
       ..sort(
