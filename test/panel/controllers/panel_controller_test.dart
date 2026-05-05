@@ -8,7 +8,9 @@ void main() {
   group('PanelController', () {
     testWidgets('uses MediaQuery-based scaled constraints when not provided', (tester) async {
       final context = await pumpPanelAppAndGetContext(tester, size: const Size(1200, 900));
-      final controller = PanelController(context);
+      final controller = PanelController();
+
+      controller.open(context, buildPanel(id: 'bootstrap', text: 'Bootstrap'));
 
       final constraints = controller.constraints;
       expect(constraints.origin, Offset.zero);
@@ -22,7 +24,6 @@ void main() {
     testWidgets('open adds panels with expected default candidate positions', (tester) async {
       final context = await pumpPanelAppAndGetContext(tester, size: const Size(1000, 800));
       final controller = PanelController(
-        context,
         initialConstraints: testConstraints(
           screen: const Size(1000, 800),
           min: const Size(80, 60),
@@ -32,8 +33,8 @@ void main() {
       final panelA = buildPanel(id: 'a', text: 'Panel A', size: const Size(120, 90));
       final panelB = buildPanel(id: 'b', text: 'Panel B', size: const Size(120, 90));
 
-      controller.open(panelA);
-      controller.open(panelB);
+      controller.open(context, panelA);
+      controller.open(context, panelB);
       await tester.pumpAndSettle();
 
       expect(controller.hasPanels, isTrue);
@@ -55,11 +56,11 @@ void main() {
     testWidgets('open respects minimized initial mode and keeps panel hidden', (tester) async {
       final context = await pumpPanelAppAndGetContext(tester);
       final controller = PanelController(
-        context,
         initialConstraints: testConstraints(),
       );
 
       controller.open(
+        context,
         _MinimizedPanel(id: 'min', text: 'Minimized Panel'),
       );
       await tester.pumpAndSettle();
@@ -75,12 +76,11 @@ void main() {
     testWidgets('minimize and restore update visibility and focused panel', (tester) async {
       final context = await pumpPanelAppAndGetContext(tester);
       final controller = PanelController(
-        context,
         initialConstraints: testConstraints(),
       );
 
-      controller.open(buildPanel(id: 'a', text: 'A'));
-      controller.open(buildPanel(id: 'b', text: 'B'));
+      controller.open(context, buildPanel(id: 'a', text: 'A'));
+      controller.open(context, buildPanel(id: 'b', text: 'B'));
       await tester.pump();
 
       final panelBController = _entryById(controller, 'b').controller;
@@ -111,7 +111,6 @@ void main() {
         min: const Size(120, 90),
       );
       final controller = PanelController(
-        context,
         initialConstraints: initialConstraints,
         initialMode: PanelMode.window,
       );
@@ -126,7 +125,7 @@ void main() {
       expect(controller.mode, PanelMode.preview);
       expect(notifications, 1);
 
-      controller.open(buildPanel(id: 'panel', text: 'Panel', size: const Size(60, 60)));
+      controller.open(context, buildPanel(id: 'panel', text: 'Panel', size: const Size(60, 60)));
       await tester.pump();
 
       final updatedConstraints = testConstraints(
@@ -146,12 +145,11 @@ void main() {
     testWidgets('close and closeAll remove panels and support delegated close', (tester) async {
       final context = await pumpPanelAppAndGetContext(tester);
       final controller = PanelController(
-        context,
         initialConstraints: testConstraints(),
       );
 
-      controller.open(buildPanel(id: 'a', text: 'Panel A'));
-      controller.open(buildPanel(id: 'b', text: 'Panel B'));
+      controller.open(context, buildPanel(id: 'a', text: 'Panel A'));
+      controller.open(context, buildPanel(id: 'b', text: 'Panel B'));
       await tester.pumpAndSettle();
 
       _entryById(controller, 'a').controller.close();
@@ -174,12 +172,11 @@ void main() {
     testWidgets('bringToFront and close ignore unknown ids and avoid duplicate notifications', (tester) async {
       final context = await pumpPanelAppAndGetContext(tester);
       final controller = PanelController(
-        context,
         initialConstraints: testConstraints(),
       );
 
-      controller.open(buildPanel(id: 'a', text: 'A'));
-      controller.open(buildPanel(id: 'b', text: 'B'));
+      controller.open(context, buildPanel(id: 'a', text: 'A'));
+      controller.open(context, buildPanel(id: 'b', text: 'B'));
       await tester.pump();
 
       var notifications = 0;
@@ -203,12 +200,11 @@ void main() {
     testWidgets('maximize, restore and focus from PanelViewController bring panel to front', (tester) async {
       final context = await pumpPanelAppAndGetContext(tester);
       final controller = PanelController(
-        context,
         initialConstraints: testConstraints(),
       );
 
-      controller.open(buildPanel(id: 'a', text: 'A'));
-      controller.open(buildPanel(id: 'b', text: 'B'));
+      controller.open(context, buildPanel(id: 'a', text: 'A'));
+      controller.open(context, buildPanel(id: 'b', text: 'B'));
       await tester.pump();
 
       final panelAController = _entryById(controller, 'a').controller;
@@ -231,15 +227,14 @@ void main() {
     testWidgets('duplicate panel id throws assertion error', (tester) async {
       final context = await pumpPanelAppAndGetContext(tester);
       final controller = PanelController(
-        context,
         initialConstraints: testConstraints(),
       );
 
       final panel = buildPanel(id: 'dup', text: 'Duplicate');
-      controller.open(panel);
+      controller.open(context, panel);
 
       expect(
-        () => controller.open(panel),
+        () => controller.open(context, panel),
         throwsA(isA<AssertionError>()),
       );
 

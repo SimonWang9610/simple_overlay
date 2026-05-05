@@ -9,11 +9,11 @@ void main() {
     testWidgets('multiple drags across three panels move only the dragged panel', (tester) async {
       final context = await pumpPanelAppAndGetContext(tester);
       final controller = PanelController(
-        context,
         initialConstraints: testConstraints(),
       );
 
       controller.open(
+        context,
         Panel(
           id: 'a',
           initialSize: const Size(160, 120),
@@ -29,6 +29,7 @@ void main() {
         ),
       );
       controller.open(
+        context,
         Panel(
           id: 'b',
           initialSize: const Size(160, 120),
@@ -45,6 +46,7 @@ void main() {
       );
 
       controller.open(
+        context,
         Panel(
           id: 'c',
           initialSize: const Size(160, 120),

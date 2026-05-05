@@ -18,7 +18,7 @@ void main() {
     );
 
     test('origin positioner always returns constraints origin', () {
-      final positioner = PanelPositioner.origin();
+      final positioner = PanelPositioner.alwaysOrigin();
 
       final result = positioner.find(panel, const <PanelGeometry>[], constraints);
 
@@ -26,7 +26,7 @@ void main() {
     });
 
     test('cascade returns origin when no other panels', () {
-      final positioner = PanelPositioner.cascade(step: const Offset(20, 20), margin: 20);
+      final positioner = PanelPositioner.cascade(offset: const Offset(20, 20), margin: 20);
 
       final result = positioner.find(panel, const <PanelGeometry>[], constraints);
 
@@ -34,7 +34,7 @@ void main() {
     });
 
     test('cascade offsets candidate while origin overlaps ordered panels', () {
-      final positioner = PanelPositioner.cascade(step: const Offset(20, 20), margin: 10);
+      final positioner = PanelPositioner.cascade(offset: const Offset(20, 20), margin: 10);
 
       final others = [
         const PanelGeometry(origin: Offset(30, 40), size: Size(200, 120)),
