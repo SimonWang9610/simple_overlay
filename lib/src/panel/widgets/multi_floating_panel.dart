@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:simple_overlay_kit/panels.dart';
 
-import 'package:simple_overlay_kit/src/panel/widgets/auto_resize_grid.dart';
+import 'package:simple_overlay_kit/src/panel/widgets/grid_flow.dart';
 import 'package:simple_overlay_kit/src/panel/widgets/panel_cache_key_store.dart';
 import 'package:simple_overlay_kit/src/panel/widgets/panel_entry_view.dart';
 
@@ -33,6 +33,7 @@ class MultiFloatingPanel extends StatelessWidget {
                 child: _PanelGrid(
                   focusedPanelId: controller.focusedPanel,
                   panels: controller.panels,
+                  panelConstraints: controller.constraints,
                   onPanelTap: () {
                     controller.mode = PanelMode.window;
                   },
@@ -45,66 +46,6 @@ class MultiFloatingPanel extends StatelessWidget {
             child: panel,
           );
         },
-      ),
-    );
-  }
-}
-
-class _PanelGrid extends StatelessWidget {
-  final Object? focusedPanelId;
-  final VoidCallback? onPanelTap;
-  final Iterable<PanelEntry> panels;
-
-  _PanelGrid({
-    this.focusedPanelId,
-    this.onPanelTap,
-    required this.panels,
-  }) : assert(
-          focusedPanelId == null || panels.isEmpty || panels.any((entry) => entry.id == focusedPanelId),
-          'Focused panel must be the topmost panel in the grid.',
-        );
-
-  @override
-  Widget build(BuildContext context) {
-    final screenSize = MediaQuery.sizeOf(context);
-
-    return SizedBox.fromSize(
-      size: screenSize * 0.8,
-      child: AutoResizeGrid(
-        children: [
-          for (final entry in panels)
-            Material(
-              elevation: entry.id == focusedPanelId ? 8 : 2,
-              shape: RoundedRectangleBorder(
-                side: entry.id == focusedPanelId ? BorderSide() : BorderSide.none,
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: InkWell(
-                onHover: (value) {
-                  if (value) {
-                    entry.controller.bringToFront();
-                  }
-                },
-                onTap: () {
-                  entry.controller.bringToFront();
-                  onPanelTap?.call();
-                },
-                child: FittedBox(
-                  fit: BoxFit.scaleDown,
-                  child: Center(
-                    child: SizedBox.fromSize(
-                      size: entry.controller.value.geometry.size,
-                      child: PanelEntryView(
-                        key: PanelCacheKeyStore.getCacheKeyForPanel(context, entry.id),
-                        enabled: false,
-                        entry: entry,
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-            ),
-        ],
       ),
     );
   }
@@ -166,6 +107,114 @@ class _PanelStack extends StatelessWidget {
               ),
             ),
           )
+      ],
+    );
+  }
+}
+
+class _PanelGrid extends StatefulWidget {
+  final Object? focusedPanelId;
+  final VoidCallback? onPanelTap;
+  final Iterable<PanelEntry> panels;
+  final PanelConstraints panelConstraints;
+
+  _PanelGrid({
+    this.focusedPanelId,
+    this.onPanelTap,
+    required this.panels,
+    required this.panelConstraints,
+  }) : assert(
+          focusedPanelId == null || panels.isEmpty || panels.any((entry) => entry.id == focusedPanelId),
+          'Focused panel must be the topmost panel in the grid.',
+        );
+
+  @override
+  State<_PanelGrid> createState() => _PanelGridState();
+}
+
+class _PanelGridState extends State<_PanelGrid> {
+  late final _focusing = ValueNotifier<Object?>(widget.focusedPanelId);
+  late List<PanelEntry> _panels = widget.panels.toList();
+
+  @override
+  void didUpdateWidget(_PanelGrid oldWidget) {
+    super.didUpdateWidget(oldWidget);
+
+    if (oldWidget.focusedPanelId != widget.focusedPanelId) {
+      _focusing.value = widget.focusedPanelId;
+    }
+
+    if (oldWidget.panels != widget.panels) {
+      _panels = widget.panels.toList();
+    }
+  }
+
+  @override
+  void dispose() {
+    _panels.clear();
+    _focusing.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final geometry = widget.panelConstraints.maximumGeometry;
+
+    return Stack(
+      fit: StackFit.expand,
+      children: [
+        Positioned(
+          top: geometry.origin.dy,
+          left: geometry.origin.dx,
+          width: geometry.size.width,
+          height: geometry.size.height,
+          child: Flow(
+            delegate: PanelGridFlowDelegate(
+              entries: _panels,
+              panelConstraints: widget.panelConstraints,
+            ),
+            children: [
+              for (final entry in _panels)
+                ValueListenableBuilder(
+                  valueListenable: _focusing,
+                  builder: (context, focusedId, child) {
+                    return Material(
+                      elevation: entry.id == focusedId ? 8 : 2,
+                      shape: RoundedRectangleBorder(
+                        side: entry.id == focusedId ? BorderSide() : BorderSide.none,
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: InkWell(
+                        onHover: (value) {
+                          if (value) {
+                            _focusing.value = entry.id;
+                          }
+                        },
+                        onTap: () {
+                          entry.controller.bringToFront();
+                          widget.onPanelTap?.call();
+                        },
+                        child: child,
+                      ),
+                    );
+                  },
+                  child: FittedBox(
+                    fit: BoxFit.scaleDown,
+                    child: Center(
+                      child: SizedBox.fromSize(
+                        size: entry.controller.value.geometry.size,
+                        child: PanelEntryView(
+                          key: PanelCacheKeyStore.getCacheKeyForPanel(context, entry.id),
+                          enabled: false,
+                          entry: entry,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+            ],
+          ),
+        ),
       ],
     );
   }
