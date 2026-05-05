@@ -105,12 +105,11 @@ final class _PanelControllerImpl extends PanelController
 
   @override
   void open(BuildContext context, Panel panel) {
-    assert(
-      !_panels.containsKey(panel.id),
-      'A panel with id "${panel.id}" is already registered.',
-    );
+    super.open(context, panel);
 
-    setupContext(context);
+    if (_panels.containsKey(panel.id)) {
+      throw StateError('A panel with id "${panel.id}" is already registered.');
+    }
 
     final state = panel.getInitialState(
       positioner.find(

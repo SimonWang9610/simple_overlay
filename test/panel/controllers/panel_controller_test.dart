@@ -235,7 +235,7 @@ void main() {
 
       expect(
         () => controller.open(context, panel),
-        throwsA(isA<AssertionError>()),
+        throwsA(isA<StateError>()),
       );
 
       controller.dispose();

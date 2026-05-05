@@ -110,27 +110,32 @@ base mixin PanelStateSetterMixin on PanelController {
 }
 
 base mixin PanelShowerMixin on PanelController, PanelStateSetterMixin {
-  BuildContext? _context;
-
   late final PanelShower _shower = PanelShower(this);
 
   void ensureOnstage(BuildContext context, Panel panel) {
-    _shower.ensurePanelOnstage(_context!, panel: panel);
+    _shower.ensurePanelOnstage(context, panel: panel);
   }
 
-  void setupContext(BuildContext context) {
-    if (_context == null || !_context!.mounted || !hasPanels) {
-      _context = context;
-    }
+  void _setupConstraintsIfNeeded(BuildContext context) {
+    if (_constraints != null) return;
 
-    _constraints ??= PanelConstraints.scale(MediaQuery.sizeOf(context));
+    assert(
+      context.mounted,
+      'Initial constraints were not provided, and the context used to open the first panel is not mounted.',
+    );
 
-    assert(_context != null && _context!.mounted, 'Context must be set and mounted to open panels.');
+    final screenSize = MediaQuery.sizeOf(context);
+
+    constraints = PanelConstraints.scale(screenSize);
+  }
+
+  @override
+  void open(BuildContext context, Panel panel) {
+    _setupConstraintsIfNeeded(context);
   }
 
   @override
   void dispose() {
-    _context = null;
     _shower.dispose();
     super.dispose();
   }
