@@ -11,7 +11,7 @@ void main() {
       final controller = PanelController(context);
 
       final constraints = controller.constraints;
-      expect(constraints.screenSize, const Size(1200, 900));
+      expect(constraints.origin, Offset.zero);
       expect(constraints.minSize, const Size(240, 180));
       expect(constraints.maxSize, const Size(1200, 900));
 
@@ -45,8 +45,8 @@ void main() {
       final panelAState = _entryById(controller, 'a').controller.value;
       final panelBState = _entryById(controller, 'b').controller.value;
 
-      expect(panelAState.geometry.origin, const Offset(20, 20));
-      expect(panelBState.geometry.origin, const Offset(40, 40));
+      expect(panelAState.geometry.origin, Offset.zero);
+      expect(panelBState.geometry.origin, const Offset(20, 20));
 
       controller.closeAll();
       await tester.pumpAndSettle();

@@ -49,12 +49,13 @@ PanelConstraints testConstraints({
   Size screen = const Size(800, 600),
   Size min = const Size(80, 60),
   Size? max,
+  Offset origin = Offset.zero,
   double edgeVisibleThreshold = 20,
 }) {
   return PanelConstraints(
     minSize: min,
-    maxSize: max,
-    screenSize: screen,
+    maxSize: max ?? screen,
+    origin: origin,
     edgeVisibleThreshold: edgeVisibleThreshold,
   );
 }

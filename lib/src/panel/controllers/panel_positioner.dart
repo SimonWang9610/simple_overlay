@@ -41,6 +41,10 @@ final class _AlwaysPanelOriginPositioner implements PanelPositioner {
 
   @override
   Offset find(Panel panel, Iterable<PanelGeometry> others, PanelConstraints constraints) {
+    if (panel.initialPosition != null) {
+      return panel.initialPosition!;
+    }
+
     return constraints.origin;
   }
 }
@@ -56,6 +60,10 @@ final class _OriginCascadePanelPositioner implements PanelPositioner {
 
   @override
   Offset find(Panel panel, Iterable<PanelGeometry> others, PanelConstraints constraints) {
+    if (panel.initialPosition != null) {
+      return panel.initialPosition!;
+    }
+
     if (others.isEmpty) {
       return constraints.origin;
     }
@@ -89,6 +97,10 @@ final class _FollowPanelPositioner implements PanelPositioner {
 
   @override
   Offset find(Panel panel, Iterable<PanelGeometry> others, PanelConstraints constraints) {
+    if (panel.initialPosition != null) {
+      return panel.initialPosition!;
+    }
+
     final panelAnchor = panelAlignment.alongSize(panel.initialSize);
     final screenAnchor = screenAlignment.alongSize(constraints.maxSize);
 

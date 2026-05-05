@@ -37,8 +37,10 @@ void main() {
       final state = controller.value;
 
       expect(state.geometry.size, const Size(100, 80));
-      expect(state.geometry.origin.dx, constraints.screenSize.width - constraints.edgeVisibleThreshold);
-      expect(state.geometry.origin.dy, constraints.screenSize.height - constraints.edgeVisibleThreshold);
+      expect(state.geometry.origin.dx,
+          constraints.origin.dx + constraints.maxSize.width - constraints.edgeVisibleThreshold);
+      expect(state.geometry.origin.dy,
+          constraints.origin.dy + constraints.maxSize.height - constraints.edgeVisibleThreshold);
     });
 
     test('setting title updates state and notifies listeners', () {
