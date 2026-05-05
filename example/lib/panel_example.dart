@@ -92,9 +92,13 @@ class _FloatingPanelExampleState extends State<FloatingPanelExample> {
 
     _panelController ??= PanelController(
       context,
-      initialConstraints: PanelConstraints.fromPadding(
+      // initialConstraints: PanelConstraints.fromPadding(
+      //   screenSize,
+      //   padding: EdgeInsets.symmetric(horizontal: 40, vertical: 80),
+      // ),
+      initialConstraints: PanelConstraints.scale(
         screenSize,
-        padding: EdgeInsets.symmetric(horizontal: 40, vertical: 80),
+        maxSizeRatio: 0.8,
       ),
     );
 

@@ -1,5 +1,7 @@
 import 'package:flutter/widgets.dart';
 import 'package:simple_overlay_kit/panels.dart';
+import 'package:simple_overlay_kit/src/panel/controllers/mixins.dart';
+import 'package:simple_overlay_kit/src/panel/controllers/panel_positioner.dart';
 import 'package:simple_overlay_kit/src/panel/controllers/panel_shower.dart';
 import 'package:simple_overlay_kit/src/panel/controllers/z_index_manager.dart';
 
@@ -14,6 +16,9 @@ abstract base class PanelController extends ChangeNotifier {
 
   PanelConstraints get constraints;
   set constraints(PanelConstraints newConstraints);
+
+  PanelConfig get config;
+  set config(PanelConfig newConfig);
 
   void open(Panel panel);
   void close(Object panelId);
@@ -43,35 +48,43 @@ abstract base class PanelController extends ChangeNotifier {
   factory PanelController(
     BuildContext context, {
     PanelConstraints? initialConstraints,
+    PanelConfig? initialConfig,
+    PanelPositioner? positioner,
     PanelMode initialMode,
     bool useOverlay,
   }) = _PanelControllerImpl;
 }
 
-final class _PanelControllerImpl extends PanelController with _PanelViewDelegateImpl, _PanelModeNotifier {
+final class _PanelControllerImpl extends PanelController with PanelViewDelegateImpl, PanelStateSetterMixin {
   _PanelControllerImpl(
     this.context, {
     PanelConstraints? initialConstraints,
+    PanelConfig? initialConfig,
+    PanelPositioner? positioner,
     PanelMode initialMode = PanelMode.window,
     bool useOverlay = false,
   }) : super._(useOverlay) {
-    _mode = initialMode;
+    final PanelConstraints c;
 
     if (initialConstraints != null) {
-      _constraints = initialConstraints;
+      c = initialConstraints;
     } else {
       final screenSize = MediaQuery.sizeOf(context);
-      _constraints = PanelConstraints.scale(screenSize);
+      c = PanelConstraints.scale(screenSize);
     }
+
+    setup(
+      constraints: c,
+      mode: initialMode,
+      config: initialConfig,
+      positioner: positioner,
+    );
   }
 
   final BuildContext context;
   final _zIndices = ZIndexManager();
   late final _shower = PanelShower(this);
   final Map<Object, PanelEntry> _panels = {};
-
-  @override
-  PanelMode get mode => _mode;
 
   @override
   Object? get focusedPanel {
@@ -82,19 +95,6 @@ final class _PanelControllerImpl extends PanelController with _PanelViewDelegate
     );
 
     return topmost;
-  }
-
-  late PanelConstraints _constraints;
-
-  @override
-  PanelConstraints get constraints => _constraints;
-
-  @override
-  set constraints(PanelConstraints newConstraints) {
-    _constraints = newConstraints;
-    for (final panel in _panels.values) {
-      panel.controller.constraints = newConstraints;
-    }
   }
 
   @override
@@ -124,7 +124,11 @@ final class _PanelControllerImpl extends PanelController with _PanelViewDelegate
     );
 
     final state = panel.getInitialState(
-      _findCandidatePosition(),
+      positioner.find(
+        panel,
+        panels.map((e) => e.controller.value.geometry),
+        constraints,
+      ),
       "Untitled-${_panels.length}",
     );
 
@@ -136,7 +140,7 @@ final class _PanelControllerImpl extends PanelController with _PanelViewDelegate
         panel.id,
         delegate: this,
         initialState: state,
-        initialConstraints: _constraints,
+        initialConstraints: constraints,
       ),
       builder: panel.builder,
     );
@@ -203,84 +207,7 @@ final class _PanelControllerImpl extends PanelController with _PanelViewDelegate
   }
 
   @override
-  bool _markPanelMinimized(Object panelId) {
+  bool markPanelMinimized(Object panelId) {
     return _zIndices.downgrade(panelId);
-  }
-
-  Offset _findCandidatePosition() {
-    Offset candidate = _constraints.origin;
-
-    final ordered = _panels.values.toList()
-      ..sort(
-        (a, b) {
-          return a.controller.value.geometry.origin.compareTo(b.controller.value.geometry.origin);
-        },
-      );
-
-    for (final entry in ordered) {
-      final geometry = entry.controller.value.geometry;
-      final rect = geometry.rect.inflate(20);
-      if (rect.contains(candidate)) {
-        candidate += const Offset(20, 20);
-      } else {
-        break;
-      }
-    }
-
-    return candidate;
-  }
-}
-
-base mixin _PanelModeNotifier on PanelController {
-  late PanelMode _mode;
-
-  @override
-  PanelMode get mode => _mode;
-
-  @override
-  set mode(PanelMode newMode) {
-    if (_mode == newMode) return;
-    _mode = newMode;
-    notifyListeners();
-  }
-}
-
-base mixin _PanelViewDelegateImpl on PanelController implements PanelViewDelegate {
-  @override
-  void onPanelMinimize(Object panelId) {
-    if (_markPanelMinimized(panelId)) {
-      notifyListeners();
-    }
-  }
-
-  @override
-  void onPanelClosed(Object panelId) {
-    close(panelId);
-  }
-
-  @override
-  void onPanelMaximize(Object panelId) {
-    bringToFront(panelId);
-  }
-
-  @override
-  void onPanelRestore(Object panelId) {
-    bringToFront(panelId);
-  }
-
-  @override
-  void onPanelFocused(Object panelId) {
-    bringToFront(panelId);
-  }
-
-  bool _markPanelMinimized(Object panelId);
-}
-
-extension on Offset {
-  int compareTo(Offset other) {
-    final dy = this.dy.compareTo(other.dy);
-    if (dy != 0) return dy;
-
-    return dx.compareTo(other.dx);
   }
 }

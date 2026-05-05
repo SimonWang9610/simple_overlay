@@ -7,6 +7,7 @@ export 'src/panel/widgets/floating_panel_dock.dart';
 export 'src/panel/widgets/panel_theme.dart';
 
 export 'src/panel/model/panel.dart';
+export 'src/panel/model/config.dart';
 export 'src/panel/model/panel_geometry.dart';
 export 'src/panel/model/enums.dart';
 export 'src/panel/model/panel_view_state.dart';

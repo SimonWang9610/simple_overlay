@@ -34,16 +34,19 @@ class MultiFloatingPanel extends StatelessWidget {
                   focusedPanelId: controller.focusedPanel,
                   panels: controller.panels,
                   panelConstraints: controller.constraints,
-                  onPanelTap: () {
+                  switchToWindowMode: () {
                     controller.mode = PanelMode.window;
                   },
                 ),
               ),
           };
 
-          return AnimatedSwitcher(
-            duration: const Duration(milliseconds: 300),
-            child: panel,
+          return PanelTheme(
+            config: controller.config,
+            child: AnimatedSwitcher(
+              duration: const Duration(milliseconds: 300),
+              child: panel,
+            ),
           );
         },
       ),
@@ -71,6 +74,8 @@ class _PanelStack extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final config = PanelTheme.of(context);
+
     return Stack(
       fit: StackFit.expand,
       children: [
@@ -79,31 +84,23 @@ class _PanelStack extends StatelessWidget {
             key: ValueKey(entry.id),
             valueListenable: entry.controller,
             builder: (_, settings, child) {
-              Widget panelView = Offstage(
-                offstage: !controller.isVisible(entry.id),
-                child: child,
-              );
-
-              if (entry.addRepaintBoundary) {
-                panelView = RepaintBoundary(child: panelView);
-              }
-
               return Positioned(
                 left: settings.geometry.origin.dx,
                 top: settings.geometry.origin.dy,
                 width: settings.geometry.size.width,
                 height: settings.geometry.size.height,
-                child: panelView,
+                child: entry.addRepaintBoundary ? RepaintBoundary(child: child) : child!,
               );
             },
-            child: Material(
-              elevation: entry.id == focusedPanelId ? 10 : 2,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: PanelEntryView(
-                key: PanelCacheKeyStore.getCacheKeyForPanel(context, entry.id),
-                entry: entry,
+            child: Offstage(
+              offstage: !controller.isVisible(entry.id),
+              child: config.wrap(
+                PanelEntryView(
+                  key: PanelCacheKeyStore.getCacheKeyForPanel(context, entry.id),
+                  entry: entry,
+                ),
+                focused: focusedPanelId == entry.id,
+                preview: false,
               ),
             ),
           )
@@ -114,13 +111,13 @@ class _PanelStack extends StatelessWidget {
 
 class _PanelGrid extends StatefulWidget {
   final Object? focusedPanelId;
-  final VoidCallback? onPanelTap;
+  final VoidCallback? switchToWindowMode;
   final Iterable<PanelEntry> panels;
   final PanelConstraints panelConstraints;
 
   _PanelGrid({
     this.focusedPanelId,
-    this.onPanelTap,
+    this.switchToWindowMode,
     required this.panels,
     required this.panelConstraints,
   }) : assert(
@@ -159,10 +156,19 @@ class _PanelGridState extends State<_PanelGrid> {
   @override
   Widget build(BuildContext context) {
     final geometry = widget.panelConstraints.maximumGeometry;
+    final config = PanelTheme.of(context);
 
     return Stack(
       fit: StackFit.expand,
       children: [
+        Positioned.fill(
+          child: GestureDetector(
+            onTap: config.previewStyle.barrierDismissible ? widget.switchToWindowMode : null,
+            child: ColoredBox(
+              color: config.previewStyle.barrierColor ?? Colors.transparent,
+            ),
+          ),
+        ),
         Positioned(
           top: geometry.origin.dy,
           left: geometry.origin.dx,
@@ -172,41 +178,46 @@ class _PanelGridState extends State<_PanelGrid> {
             delegate: PanelGridFlowDelegate(
               entries: _panels,
               panelConstraints: widget.panelConstraints,
+              horizontalSpacing: config.previewStyle.horizontalSpacing,
+              verticalSpacing: config.previewStyle.verticalSpacing,
+              expandLastRow: config.previewStyle.expandLastRow,
             ),
             children: [
               for (final entry in _panels)
-                ValueListenableBuilder(
-                  valueListenable: _focusing,
-                  builder: (context, focusedId, child) {
-                    return Material(
-                      elevation: entry.id == focusedId ? 8 : 2,
-                      shape: RoundedRectangleBorder(
-                        side: entry.id == focusedId ? BorderSide() : BorderSide.none,
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: InkWell(
-                        onHover: (value) {
-                          if (value) {
-                            _focusing.value = entry.id;
-                          }
-                        },
-                        onTap: () {
-                          entry.controller.bringToFront();
-                          widget.onPanelTap?.call();
-                        },
-                        child: child,
-                      ),
-                    );
-                  },
-                  child: FittedBox(
-                    fit: BoxFit.scaleDown,
-                    child: Center(
-                      child: SizedBox.fromSize(
-                        size: entry.controller.value.geometry.size,
-                        child: PanelEntryView(
-                          key: PanelCacheKeyStore.getCacheKeyForPanel(context, entry.id),
-                          enabled: false,
-                          entry: entry,
+                FittedBox(
+                  fit: BoxFit.scaleDown,
+                  child: MouseRegion(
+                    onHover: (_) {
+                      _focusing.value = entry.id;
+                    },
+                    child: GestureDetector(
+                      onTap: () {
+                        entry.controller.bringToFront();
+                        widget.switchToWindowMode?.call();
+                      },
+                      child: Center(
+                        child: ValueListenableBuilder(
+                          valueListenable: _focusing,
+                          builder: (context, focusedId, child) {
+                            final panelView = config.wrap(
+                              SizedBox.fromSize(
+                                size: entry.controller.value.geometry.size,
+                                child: PanelEntryView(
+                                  key: PanelCacheKeyStore.getCacheKeyForPanel(context, entry.id),
+                                  enabled: false,
+                                  entry: entry,
+                                ),
+                              ),
+                              focused: focusedId == entry.id,
+                              preview: true,
+                            );
+
+                            if (entry.addRepaintBoundary) {
+                              return RepaintBoundary(child: panelView);
+                            } else {
+                              return panelView;
+                            }
+                          },
                         ),
                       ),
                     ),
