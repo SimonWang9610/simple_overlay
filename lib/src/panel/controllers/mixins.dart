@@ -129,6 +129,7 @@ base mixin PanelShowerMixin on PanelController, PanelStateSetterMixin {
     constraints = PanelConstraints.scale(screenSize);
   }
 
+  @mustCallSuper
   @override
   void open(BuildContext context, Panel panel) {
     _setupConstraintsIfNeeded(context);
