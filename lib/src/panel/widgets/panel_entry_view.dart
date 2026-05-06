@@ -80,13 +80,20 @@ class _PanelEntryViewState extends State<PanelEntryView> {
       view = GestureDetector(
         onTap: widget.entry.controller.bringToFront,
         onPanDown: (details) {
-          widget.entry.controller.bringToFront();
           _updateCursor(details.localPosition);
           _gestureActive = true;
         },
+        onPanCancel: () {
+          _gestureActive = false;
+          _reset();
+        },
         onPanEnd: (details) {
+          _gestureActive = false;
           _reset();
           _updateCursor(details.localPosition);
+        },
+        onPanStart: (details) {
+          widget.entry.controller.bringToFront();
         },
         onPanUpdate: _onPanUpdate,
         child: ValueListenableBuilder(
@@ -140,7 +147,6 @@ class _PanelEntryViewState extends State<PanelEntryView> {
   void _reset() {
     _cursor.value = MouseCursor.defer;
     _direction = null;
-    _gestureActive = false;
   }
 
   void _onPanUpdate(DragUpdateDetails details) {
