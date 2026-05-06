@@ -27,6 +27,8 @@ class PanelPreviewStyle extends Equatable {
         expandLastRow,
         barrierColor,
         barrierDismissible,
+        decoration,
+        focusedDecoration,
       ];
 }
 

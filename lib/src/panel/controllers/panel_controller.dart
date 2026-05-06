@@ -205,7 +205,7 @@ final class _PanelControllerImpl extends PanelController
     return PanelViewState(
       geometry: defaultGeometryOf(panel),
       mode: PanelViewMode.normal,
-      title: "Untitled-${_panels.length}",
+      title: panel.title ?? "Untitled-${_panels.length}",
     );
   }
 }
