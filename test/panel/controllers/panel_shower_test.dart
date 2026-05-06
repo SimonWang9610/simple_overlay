@@ -175,5 +175,56 @@ void main() {
 
       controller.dispose();
     });
+
+    testWidgets('popping hosting route closes all panels automatically', (tester) async {
+      late BuildContext rootContext;
+      late BuildContext routeContext;
+
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Builder(
+            builder: (context) {
+              rootContext = context;
+              return Scaffold(
+                body: TextButton(
+                  onPressed: () {
+                    Navigator.of(context).push(
+                      MaterialPageRoute<void>(
+                        builder: (context) {
+                          routeContext = context;
+                          return const Scaffold(body: SizedBox());
+                        },
+                      ),
+                    );
+                  },
+                  child: const Text('push'),
+                ),
+              );
+            },
+          ),
+        ),
+      );
+
+      await tester.tap(find.text('push'));
+      await tester.pumpAndSettle();
+
+      final controller = PanelController(initialConstraints: testConstraints());
+
+      controller.open(routeContext, buildPanel(id: 'a', text: 'Panel A'));
+      controller.open(routeContext, buildPanel(id: 'b', text: 'Panel B'));
+      await tester.pumpAndSettle();
+
+      expect(controller.hasPanels, isTrue);
+      expect(find.byType(MultiFloatingPanel), findsOneWidget);
+
+      Navigator.of(routeContext).pop();
+      await tester.pumpAndSettle();
+
+      expect(rootContext.mounted, isTrue);
+      expect(controller.hasPanels, isFalse);
+      expect(find.byType(MultiFloatingPanel), findsNothing);
+
+      controller.dispose();
+    });
   });
 }

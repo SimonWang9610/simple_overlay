@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:simple_overlay_kit/src/panel/controllers/z_index_manager.dart';
+import 'package:simple_overlay_kit/src/panel/components/z_index_manager.dart';
 
 void main() {
   group('ZIndexManager', () {

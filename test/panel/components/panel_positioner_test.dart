@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:simple_overlay_kit/panels.dart';
-import 'package:simple_overlay_kit/src/panel/components/panel_positioner.dart';
 
 void main() {
   group('PanelPositioner', () {
@@ -56,6 +55,39 @@ void main() {
       final result = positioner.find(const <PanelGeometry>[], constraints, panel.initialSize!);
 
       expect(result, const Offset(730, 540));
+    });
+
+    test('alwaysOrigin ignores existing panels and panel size', () {
+      final positioner = PanelPositioner.alwaysOrigin();
+
+      final result = positioner.find(
+        const [PanelGeometry(origin: Offset(0, 0), size: Size(300, 200))],
+        constraints,
+        const Size(999, 999),
+      );
+
+      expect(result, constraints.origin);
+    });
+
+    test('cascade stops offsetting once candidate no longer overlaps next rect', () {
+      final positioner = PanelPositioner.cascade(offset: const Offset(20, 20), margin: 0);
+
+      final others = [
+        const PanelGeometry(origin: Offset(30, 40), size: Size(40, 40)),
+        const PanelGeometry(origin: Offset(80, 90), size: Size(40, 40)),
+      ];
+
+      final result = positioner.find(others, constraints, panel.initialSize!);
+
+      expect(result, const Offset(50, 60));
+    });
+
+    test('follow with defaults aligns top-left and only applies offset', () {
+      const positioner = PanelPositioner.follow(offset: Offset(7, 11));
+
+      final result = positioner.find(const <PanelGeometry>[], constraints, panel.initialSize!);
+
+      expect(result, const Offset(7, 11));
     });
   });
 }

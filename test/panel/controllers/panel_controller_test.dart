@@ -220,6 +220,127 @@ void main() {
 
       controller.dispose();
     });
+
+    testWidgets('uses given positioner and sizer when panel initial geometry is not provided', (tester) async {
+      final context = await pumpPanelAppAndGetContext(tester);
+      final constraints = testConstraints(
+        screen: const Size(800, 600),
+        min: const Size(100, 80),
+        max: const Size(400, 300),
+      );
+
+      final controller = PanelController(
+        initialConstraints: constraints,
+        positioner: const PanelPositioner.follow(
+          panelAlignment: Alignment.bottomRight,
+          screenAlignment: Alignment.bottomRight,
+        ),
+        sizer: const PanelSizer.fixed(size: Size(220, 140)),
+      );
+
+      controller.open(
+        context,
+        Panel(
+          id: 'auto-geometry',
+          builder: (_, __) => const Text('Auto Geometry'),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      final geometry = _entryById(controller, 'auto-geometry').controller.value.geometry;
+
+      expect(geometry.size, const Size(220, 140));
+      expect(geometry.origin, const Offset(180, 160));
+
+      controller.dispose();
+    });
+
+    testWidgets('initial constraints are initialized once when not provided', (tester) async {
+      late BuildContext outerContext;
+      late BuildContext innerContext;
+
+      await tester.pumpWidget(
+        MaterialApp(
+          home: MediaQuery(
+            data: const MediaQueryData(size: Size(1000, 700)),
+            child: Builder(
+              builder: (context) {
+                outerContext = context;
+                return MediaQuery(
+                  data: const MediaQueryData(size: Size(320, 240)),
+                  child: Builder(
+                    builder: (context) {
+                      innerContext = context;
+                      return const SizedBox();
+                    },
+                  ),
+                );
+              },
+            ),
+          ),
+        ),
+      );
+
+      final controller = PanelController();
+
+      controller.open(outerContext, buildPanel(id: 'a', text: 'A'));
+      await tester.pumpAndSettle();
+      final firstConstraints = controller.constraints;
+
+      controller.open(innerContext, buildPanel(id: 'b', text: 'B'));
+      await tester.pumpAndSettle();
+
+      expect(firstConstraints.maxSize, const Size(1000, 700));
+      expect(controller.constraints, firstConstraints);
+
+      controller.dispose();
+    });
+
+    testWidgets('PanelController.close and PanelViewController.close are idempotent together', (tester) async {
+      final context = await pumpPanelAppAndGetContext(tester);
+      final controller = PanelController(initialConstraints: testConstraints());
+
+      controller.open(context, buildPanel(id: 'a', text: 'A'));
+      controller.open(context, buildPanel(id: 'b', text: 'B'));
+      await tester.pumpAndSettle();
+
+      final panelAController = _entryById(controller, 'a').controller;
+
+      var notifications = 0;
+      controller.addListener(() => notifications++);
+
+      controller.close('a');
+      panelAController.close();
+      controller.close('a');
+      await tester.pumpAndSettle();
+
+      expect(controller.panels.map((entry) => entry.id), ['b']);
+      expect(notifications, 1);
+
+      controller.dispose();
+    });
+
+    testWidgets('bringToFront on topmost panel keeps full z-order unchanged', (tester) async {
+      final context = await pumpPanelAppAndGetContext(tester);
+      final controller = PanelController(initialConstraints: testConstraints());
+
+      controller.open(context, buildPanel(id: 'a', text: 'A'));
+      controller.open(context, buildPanel(id: 'b', text: 'B'));
+      controller.open(context, buildPanel(id: 'c', text: 'C'));
+      await tester.pumpAndSettle();
+
+      final beforeOrder = controller.orderedPanels.map((entry) => entry.id).toList();
+
+      var notifications = 0;
+      controller.addListener(() => notifications++);
+
+      controller.bringToFront('c');
+
+      expect(controller.orderedPanels.map((entry) => entry.id).toList(), beforeOrder);
+      expect(notifications, 0);
+
+      controller.dispose();
+    });
   });
 }
 
