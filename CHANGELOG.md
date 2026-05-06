@@ -1,4 +1,7 @@
 
+## 1.0.3
+- feat: support optional `onRemoved` callback in `FloatingController` to notify when the overlay is removed. Specifically for the floating overlay is removed, the `onRemoved` callback will be called to notify the caller, allowing them to perform any necessary cleanup or state updates. This enhancement provides better control and feedback for managing the lifecycle of floating overlays in Flutter applications.
+
 ## 1.0.2
 
 - break change: rename `FloatingController.custom` to `FloatingController.transition` to better reflect its purpose and usage. 

@@ -39,13 +39,16 @@ class _MyHomePageState extends State<MyHomePage> {
     super.dispose();
   }
 
+  void _onRemoved() {
+    if (kDebugMode) {
+      print("Overlay was auto hidden");
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-        title: Text(widget.title),
-      ),
+      appBar: AppBar(backgroundColor: Theme.of(context).colorScheme.inversePrimary, title: Text(widget.title)),
       body: Center(
         child: Column(
           spacing: 10,
@@ -71,17 +74,11 @@ class _MyHomePageState extends State<MyHomePage> {
                       OverlayRouteConfig(
                         builder: (context) => AlertDialog(
                           title: const Text('Hello'),
-                          content: const Text(
-                            'This is a simple raw overlay dialog using route',
-                          ),
-                          actions: [
-                            TextButton(
-                              onPressed: () => manager.hide(),
-                              child: const Text('Close'),
-                            ),
-                          ],
+                          content: const Text('This is a simple raw overlay dialog using route'),
+                          actions: [TextButton(onPressed: () => manager.hide(), child: const Text('Close'))],
                         ),
                       ),
+                      onRemoved: _onRemoved,
                     );
                   },
                   child: const Text('Show raw overlay with route'),
@@ -94,17 +91,11 @@ class _MyHomePageState extends State<MyHomePage> {
                         barrierConfig: const BarrierConfig(),
                         builder: (context) => AlertDialog(
                           title: const Text('Hello'),
-                          content: const Text(
-                            'This is a simple raw overlay dialog using route with barrier',
-                          ),
-                          actions: [
-                            TextButton(
-                              onPressed: () => manager.hide(),
-                              child: const Text('Close'),
-                            ),
-                          ],
+                          content: const Text('This is a simple raw overlay dialog using route with barrier'),
+                          actions: [TextButton(onPressed: () => manager.hide(), child: const Text('Close'))],
                         ),
                       ),
+                      onRemoved: _onRemoved,
                     );
                   },
                   child: const Text('Show raw overlay with route and barrier'),
@@ -121,17 +112,11 @@ class _MyHomePageState extends State<MyHomePage> {
                       RawOverlayConfig(
                         builder: (context) => AlertDialog(
                           title: const Text('Hello'),
-                          content: const Text(
-                            'This is a simple raw overlay without route',
-                          ),
-                          actions: [
-                            TextButton(
-                              onPressed: () => manager.hide(),
-                              child: const Text('Close'),
-                            ),
-                          ],
+                          content: const Text('This is a simple raw overlay without route'),
+                          actions: [TextButton(onPressed: () => manager.hide(), child: const Text('Close'))],
                         ),
                       ),
+                      onRemoved: _onRemoved,
                     );
                   },
                   child: const Text('Show raw overlay with overlay'),
@@ -142,24 +127,15 @@ class _MyHomePageState extends State<MyHomePage> {
                       context,
                       RawOverlayConfig(
                         transitionBuilder: (context, animation, child) {
-                          return FadeTransition(
-                            opacity: animation,
-                            child: child,
-                          );
+                          return FadeTransition(opacity: animation, child: child);
                         },
                         builder: (context) => AlertDialog(
                           title: const Text('Hello'),
-                          content: const Text(
-                            'This is a simple raw overlay without route but animated',
-                          ),
-                          actions: [
-                            TextButton(
-                              onPressed: () => manager.hide(),
-                              child: const Text('Close'),
-                            ),
-                          ],
+                          content: const Text('This is a simple raw overlay without route but animated'),
+                          actions: [TextButton(onPressed: () => manager.hide(), child: const Text('Close'))],
                         ),
                       ),
+                      onRemoved: _onRemoved,
                     );
                   },
                   child: const Text('Show raw overlay with overlay/animation'),
@@ -176,15 +152,11 @@ class _MyHomePageState extends State<MyHomePage> {
                       return AlertDialog(
                         title: const Text('Hello'),
                         content: const Text('This is a simple overlay dialog.'),
-                        actions: [
-                          TextButton(
-                            onPressed: () => manager.hide(),
-                            child: const Text('Close'),
-                          ),
-                        ],
+                        actions: [TextButton(onPressed: () => manager.hide(), child: const Text('Close'))],
                       );
                     },
                   ),
+                  onRemoved: _onRemoved,
                 );
               },
               child: const Text('Show dialog overlay'),
@@ -199,34 +171,27 @@ class _MyHomePageState extends State<MyHomePage> {
                       context,
                       SimpleTransitionRouteConfig(
                         barrierConfig: BarrierConfig(),
-                        transitionBuilder:
-                            (context, animation, secondaryAnimation, child) {
-                              return ScaleTransition(
-                                scale: animation,
-                                child: AlignTransition(
-                                  alignment: AlignmentTween(
-                                    begin: Alignment.topCenter,
-                                    end: Alignment.bottomCenter,
-                                  ).animate(animation),
-                                  child: child,
-                                ),
-                              );
-                            },
+                        transitionBuilder: (context, animation, secondaryAnimation, child) {
+                          return ScaleTransition(
+                            scale: animation,
+                            child: AlignTransition(
+                              alignment: AlignmentTween(
+                                begin: Alignment.topCenter,
+                                end: Alignment.bottomCenter,
+                              ).animate(animation),
+                              child: child,
+                            ),
+                          );
+                        },
                         builder: (context, animation, secondaryAnimation) {
                           return AlertDialog(
                             title: const Text('Hello'),
-                            content: const Text(
-                              'This is a custom route dialog with barrier',
-                            ),
-                            actions: [
-                              TextButton(
-                                onPressed: () => manager.hide(),
-                                child: const Text('Close'),
-                              ),
-                            ],
+                            content: const Text('This is a custom route dialog with barrier'),
+                            actions: [TextButton(onPressed: () => manager.hide(), child: const Text('Close'))],
                           );
                         },
                       ),
+                      onRemoved: _onRemoved,
                     );
                   },
                   child: const Text('Show custom route overlay with barrier'),
@@ -236,20 +201,19 @@ class _MyHomePageState extends State<MyHomePage> {
                     manager.show(
                       context,
                       SimpleTransitionRouteConfig(
-                        transitionBuilder:
-                            (context, animation, secondaryAnimation, child) {
-                              return ScaleTransition(
-                                scale: animation,
-                                child: AlignTransition(
-                                  alignment: AlignmentTween(
-                                    begin: Alignment.topCenter,
-                                    end: Alignment.center,
-                                  ).animate(animation),
+                        transitionBuilder: (context, animation, secondaryAnimation, child) {
+                          return ScaleTransition(
+                            scale: animation,
+                            child: AlignTransition(
+                              alignment: AlignmentTween(
+                                begin: Alignment.topCenter,
+                                end: Alignment.center,
+                              ).animate(animation),
 
-                                  child: child,
-                                ),
-                              );
-                            },
+                              child: child,
+                            ),
+                          );
+                        },
                         builder: (context, animation, secondaryAnimation) {
                           return Material(
                             type: MaterialType.transparency,
@@ -259,24 +223,18 @@ class _MyHomePageState extends State<MyHomePage> {
                               children: [
                                 Text(
                                   'This is a custom route dialog without barrier',
-                                  style: Theme.of(
-                                    context,
-                                  ).textTheme.headlineSmall,
+                                  style: Theme.of(context).textTheme.headlineSmall,
                                 ),
-                                ElevatedButton(
-                                  onPressed: () => manager.hide(),
-                                  child: const Text('Close'),
-                                ),
+                                ElevatedButton(onPressed: () => manager.hide(), child: const Text('Close')),
                               ],
                             ),
                           );
                         },
                       ),
+                      onRemoved: _onRemoved,
                     );
                   },
-                  child: const Text(
-                    'Show custom route overlay without barrier',
-                  ),
+                  child: const Text('Show custom route overlay without barrier'),
                 ),
                 ElevatedButton(
                   onPressed: () {
@@ -289,18 +247,13 @@ class _MyHomePageState extends State<MyHomePage> {
                               Positioned(
                                 top: 10,
                                 right: 20,
-                                child: ColoredBox(
-                                  color: Colors.red,
-                                  child: const SizedBox(
-                                    width: 100,
-                                    height: 100,
-                                  ),
-                                ),
+                                child: ColoredBox(color: Colors.red, child: const SizedBox(width: 100, height: 100)),
                               ),
                             ],
                           );
                         },
                       ),
+                      onRemoved: _onRemoved,
                     );
                   },
                   child: Text("Show custom route overlay with Positioned"),
@@ -312,35 +265,25 @@ class _MyHomePageState extends State<MyHomePage> {
               onPressed: () async {
                 await manager.show(
                   context,
+                  onRemoved: _onRemoved,
                   SimpleTransitionRouteConfig(
                     transitionDuration: const Duration(seconds: 2),
-                    transitionBuilder:
-                        (context, animation, secondaryAnimation, child) {
-                          final alignment =
-                              AlignmentTween(
-                                begin: Alignment.topLeft,
-                                end: Alignment.bottomRight,
-                              ).animate(
-                                CurvedAnimation(
-                                  parent: animation,
-                                  curve: const Interval(
-                                    0.0,
-                                    0.5,
-                                    curve: Curves.easeInOut,
-                                  ),
-                                ),
-                              );
 
-                          final scale = Tween(
-                            begin: 1.0,
-                            end: 0.0,
-                          ).animate(animation);
+                    transitionBuilder: (context, animation, secondaryAnimation, child) {
+                      final alignment = AlignmentTween(begin: Alignment.topLeft, end: Alignment.bottomRight).animate(
+                        CurvedAnimation(
+                          parent: animation,
+                          curve: const Interval(0.0, 0.5, curve: Curves.easeInOut),
+                        ),
+                      );
 
-                          return AlignTransition(
-                            alignment: alignment,
-                            child: ScaleTransition(scale: scale, child: child),
-                          );
-                        },
+                      final scale = Tween(begin: 1.0, end: 0.0).animate(animation);
+
+                      return AlignTransition(
+                        alignment: alignment,
+                        child: ScaleTransition(scale: scale, child: child),
+                      );
+                    },
                     builder: (context, animation, secondaryAnimation) {
                       return Material(
                         type: MaterialType.transparency,
@@ -366,9 +309,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
                 manager.hide();
               },
-              child: const Text(
-                'Show transient overlay (auto hide after animation)',
-              ),
+              child: const Text('Show transient overlay (auto hide after animation)'),
             ),
             Text("Draggable positioned overlay example"),
             ElevatedButton(
@@ -388,16 +329,12 @@ class _MyHomePageState extends State<MyHomePage> {
                             onPanEnd: (details) {
                               final globalPosition = details.globalPosition;
 
-                              if (globalPosition.dx < 0 ||
-                                  globalPosition.dy < 0) {
+                              if (globalPosition.dx < 0 || globalPosition.dy < 0) {
                                 manager.hide();
                                 return;
                               }
                             },
-                            child: ColoredBox(
-                              color: Colors.red,
-                              child: const SizedBox(width: 100, height: 100),
-                            ),
+                            child: ColoredBox(color: Colors.red, child: const SizedBox(width: 100, height: 100)),
                           ),
                         );
                       },
@@ -405,7 +342,7 @@ class _MyHomePageState extends State<MyHomePage> {
                   },
                 );
 
-                manager.show(context, config);
+                manager.show(context, config, onRemoved: _onRemoved);
               },
               child: const Text('Show draggable positioned overlay'),
             ),
@@ -439,16 +376,8 @@ class _MyHomePageState extends State<MyHomePage> {
                   context: context,
                   builder: (_) => AlertDialog(
                     title: const Text('Hello'),
-                    content: const Text(
-                      'This is a normal dialog without overlay',
-                      style: TextStyle(color: Colors.red),
-                    ),
-                    actions: [
-                      TextButton(
-                        onPressed: () => Navigator.of(context).pop(),
-                        child: const Text('Close'),
-                      ),
-                    ],
+                    content: const Text('This is a normal dialog without overlay', style: TextStyle(color: Colors.red)),
+                    actions: [TextButton(onPressed: () => Navigator.of(context).pop(), child: const Text('Close'))],
                   ),
                 );
               },

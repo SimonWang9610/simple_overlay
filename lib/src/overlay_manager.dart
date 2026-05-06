@@ -11,12 +11,16 @@ final class FloatingManager extends ChangeNotifier {
 
   bool get isShowing => _controller?.value ?? false;
 
-  FutureOr<void> show(BuildContext context, FloatingConfig config) async {
+  FutureOr<void> show(
+    BuildContext context,
+    FloatingConfig config, {
+    VoidCallback? onRemoved,
+  }) async {
     if (_controller != null) {
       _disposeController();
     }
 
-    _controller = FloatingController.withConfig(config);
+    _controller = FloatingController.withConfig(config, onRemoved: onRemoved);
 
     /// Listen to the controller's value changes and notify listeners of this manager.
     _controller!.addListener(notifyListeners);

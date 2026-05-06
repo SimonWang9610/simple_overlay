@@ -13,13 +13,17 @@ import 'floating_config.dart';
 ///
 /// It can only show an given [FloatingConfig] once, and will be disposed after hiding the overlay.
 ///
+/// [onRemoved] will be called when the overlay is hidden by user action or system back button,
+/// it can be used to update the state of the UI accordingly. It is only triggered.
+///
 /// See also:
 /// - [_OverlayEntryController]: the controller for showing and hiding [OverlayEntry].
 /// - [_OverlayRouteController]: the controller for showing and hiding [OverlayRoute].
 /// - [_TransitionRouteController]: the controller for showing and hiding [TransitionRoute].
-abstract base class FloatingController extends ChangeNotifier
-    implements ValueListenable<bool> {
-  FloatingController();
+abstract base class FloatingController extends ChangeNotifier implements ValueListenable<bool> {
+  final VoidCallback? onRemoved;
+
+  FloatingController({this.onRemoved});
 
   /// When showing [TransitionRoute], the showing status will be set to true immediately,
   /// await [show] will complete when the route's transition animation is completed.
@@ -51,12 +55,13 @@ abstract base class FloatingController extends ChangeNotifier
     super.dispose();
   }
 
-  factory FloatingController.withConfig(FloatingConfig config) {
+  factory FloatingController.withConfig(FloatingConfig config, {VoidCallback? onRemoved}) {
     return switch (config) {
-      final RawOverlayConfig raw => _OverlayEntryController(raw),
-      final OverlayRouteConfig route => _OverlayRouteController(route),
+      final RawOverlayConfig raw => _OverlayEntryController(raw, onRemoved: onRemoved),
+      final OverlayRouteConfig route => _OverlayRouteController(route, onRemoved: onRemoved),
       final TransitionRouteConfig transition => _TransitionRouteController(
           transition,
+          onRemoved: onRemoved,
         ),
     };
   }
@@ -67,6 +72,7 @@ abstract base class FloatingController extends ChangeNotifier
     bool useRootNavigator = false,
     Offset? anchorPoint,
     RouteTransitionsBuilder? transitionBuilder,
+    VoidCallback? onRemoved,
     required RoutePageBuilder builder,
   }) {
     final config = DialogRouteConfig(
@@ -77,7 +83,7 @@ abstract base class FloatingController extends ChangeNotifier
       builder: builder,
     );
 
-    return _TransitionRouteController(config);
+    return _TransitionRouteController(config, onRemoved: onRemoved);
   }
 
   /// Factory constructor for creating a [SimpleTransitionRoute] with custom transition.
@@ -86,6 +92,7 @@ abstract base class FloatingController extends ChangeNotifier
     BarrierConfig? barrierConfig,
     Duration transitionDuration = const Duration(milliseconds: 200),
     Duration? reverseTransitionDuration,
+    VoidCallback? onRemoved,
     RouteTransitionsBuilder? transitionBuilder,
     required RoutePageBuilder builder,
   }) {
@@ -98,7 +105,7 @@ abstract base class FloatingController extends ChangeNotifier
       builder: builder,
     );
 
-    return _TransitionRouteController(config);
+    return _TransitionRouteController(config, onRemoved: onRemoved);
   }
 
   /// Factory constructor for creating an overlay.
@@ -119,6 +126,7 @@ abstract base class FloatingController extends ChangeNotifier
     Duration? reverseTransitionDuration,
     bool useRoute = false,
     BarrierConfig? barrierConfig,
+    VoidCallback? onRemoved,
     OverlayTransitionBuilder? transitionBuilder,
     required WidgetBuilder builder,
   }) {
@@ -131,7 +139,7 @@ abstract base class FloatingController extends ChangeNotifier
         builder: builder,
       );
 
-      return _OverlayRouteController(config);
+      return _OverlayRouteController(config, onRemoved: onRemoved);
     }
 
     final config = RawOverlayConfig(
@@ -144,14 +152,14 @@ abstract base class FloatingController extends ChangeNotifier
       builder: builder,
     );
 
-    return _OverlayEntryController(config);
+    return _OverlayEntryController(config, onRemoved: onRemoved);
   }
 }
 
 final class _OverlayEntryController extends FloatingController {
   final RawOverlayConfig config;
 
-  _OverlayEntryController(this.config);
+  _OverlayEntryController(this.config, {super.onRemoved});
 
   OverlayEntry? _entry;
   AnimationController? _animation;
@@ -161,8 +169,7 @@ final class _OverlayEntryController extends FloatingController {
     if (value) return;
 
     if (config.transitionBuilder != null) {
-      final navigator =
-          Navigator.of(context, rootNavigator: config.rootOverlay);
+      final navigator = Navigator.of(context, rootNavigator: config.rootOverlay);
 
       _animation ??= AnimationController(
         duration: config.transitionDuration,
@@ -209,6 +216,7 @@ final class _OverlayEntryController extends FloatingController {
   }
 
   void _hide() {
+    if (_entry == null) return;
     _entry?.removeListener(_onOverlayEntryChanged);
     _entry?.remove();
     _entry?.dispose();
@@ -216,6 +224,7 @@ final class _OverlayEntryController extends FloatingController {
     _animation = null;
     _entry = null;
     _showing = false;
+    onRemoved?.call();
   }
 
   void _onOverlayEntryChanged() {
@@ -238,7 +247,7 @@ final class _OverlayEntryController extends FloatingController {
 final class _OverlayRouteController extends FloatingController {
   final OverlayRouteConfig config;
 
-  _OverlayRouteController(this.config);
+  _OverlayRouteController(this.config, {super.onRemoved});
 
   OverlayRoute? _route;
 
@@ -266,6 +275,7 @@ final class _OverlayRouteController extends FloatingController {
       () {
         _route = null;
         _showing = false;
+        onRemoved?.call();
       },
     );
 
@@ -296,7 +306,7 @@ final class _OverlayRouteController extends FloatingController {
 final class _TransitionRouteController extends FloatingController {
   final TransitionRouteConfig config;
 
-  _TransitionRouteController(this.config);
+  _TransitionRouteController(this.config, {super.onRemoved});
 
   @override
   bool get value => _value && _route != null;
@@ -323,6 +333,7 @@ final class _TransitionRouteController extends FloatingController {
     navigator.push(_route!).whenComplete(() {
       _route = null;
       _showing = false;
+      onRemoved?.call();
     });
 
     final completer = Completer<void>();
