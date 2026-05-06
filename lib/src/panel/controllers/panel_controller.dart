@@ -1,7 +1,8 @@
 import 'package:flutter/widgets.dart';
 import 'package:simple_overlay_kit/panels.dart';
+import 'package:simple_overlay_kit/src/panel/components/panel_sizer.dart';
 import 'package:simple_overlay_kit/src/panel/controllers/mixins.dart';
-import 'package:simple_overlay_kit/src/panel/controllers/panel_positioner.dart';
+import 'package:simple_overlay_kit/src/panel/components/panel_positioner.dart';
 import 'package:simple_overlay_kit/src/panel/controllers/z_index_manager.dart';
 
 abstract base class PanelController extends ChangeNotifier {
@@ -48,6 +49,7 @@ abstract base class PanelController extends ChangeNotifier {
     PanelConstraints? initialConstraints,
     PanelConfig initialConfig,
     PanelPositioner positioner,
+    PanelSizer sizer,
     PanelMode initialMode,
     bool useOverlay,
   }) = _PanelControllerImpl;
@@ -59,6 +61,7 @@ final class _PanelControllerImpl extends PanelController
     PanelConstraints? initialConstraints,
     PanelConfig initialConfig = const PanelConfig(),
     PanelPositioner positioner = const PanelPositioner.cascade(),
+    PanelSizer sizer = const PanelSizer.scale(),
     PanelMode initialMode = PanelMode.window,
     bool useOverlay = false,
   }) : super._(useOverlay) {
@@ -67,6 +70,7 @@ final class _PanelControllerImpl extends PanelController
       mode: initialMode,
       config: initialConfig,
       positioner: positioner,
+      sizer: sizer,
     );
   }
 
@@ -111,14 +115,7 @@ final class _PanelControllerImpl extends PanelController
       throw StateError('A panel with id "${panel.id}" is already registered.');
     }
 
-    final state = panel.getInitialState(
-      positioner.find(
-        panel,
-        panels.map((e) => e.controller.value.geometry),
-        constraints,
-      ),
-      "Untitled-${_panels.length}",
-    );
+    final state = _getInitialStateOf(panel);
 
     _panels[panel.id] = PanelEntry(
       id: panel.id,
@@ -191,5 +188,26 @@ final class _PanelControllerImpl extends PanelController
   @override
   bool markPanelMinimized(Object panelId) {
     return _zIndices.downgrade(panelId);
+  }
+
+  PanelGeometry defaultGeometryOf(Panel panel) {
+    final size = panel.initialSize ?? sizer.constrain(constraints);
+
+    final origin = panel.initialPosition ??
+        positioner.find(
+          panels.map((p) => p.controller.value.geometry),
+          constraints,
+          size,
+        );
+
+    return PanelGeometry(origin: origin, size: size);
+  }
+
+  PanelViewState _getInitialStateOf(Panel panel) {
+    return PanelViewState(
+      geometry: defaultGeometryOf(panel),
+      mode: PanelViewMode.normal,
+      title: "Untitled-${_panels.length}",
+    );
   }
 }

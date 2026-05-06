@@ -201,7 +201,6 @@ class _PanelWidgetState extends State<_PanelWidget> {
         id: key,
         title: "Sub Panel - $key",
         maintainState: false,
-        initialSize: const Size(200, 200),
         builder: (_, c) => _PanelWidget(controller: c),
       ),
     );

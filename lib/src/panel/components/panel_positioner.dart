@@ -3,7 +3,7 @@ import 'package:simple_overlay_kit/panels.dart';
 
 /// A strategy for determining the initial position of a panel when it is opened.
 abstract interface class PanelPositioner {
-  Offset find(Panel panel, Iterable<PanelGeometry> others, PanelConstraints constraints);
+  Offset find(Iterable<PanelGeometry> others, PanelConstraints constraints, Size panelSize);
 
   /// A positioner that always returns the origin specified in the constraints.
   const factory PanelPositioner.alwaysOrigin() = _AlwaysPanelOriginPositioner;
@@ -34,11 +34,7 @@ final class _AlwaysPanelOriginPositioner implements PanelPositioner {
   const _AlwaysPanelOriginPositioner();
 
   @override
-  Offset find(Panel panel, Iterable<PanelGeometry> others, PanelConstraints constraints) {
-    if (panel.initialPosition != null) {
-      return panel.initialPosition!;
-    }
-
+  Offset find(Iterable<PanelGeometry> others, PanelConstraints constraints, Size panelSize) {
     return constraints.origin;
   }
 }
@@ -53,11 +49,7 @@ final class _OriginCascadePanelPositioner implements PanelPositioner {
   });
 
   @override
-  Offset find(Panel panel, Iterable<PanelGeometry> others, PanelConstraints constraints) {
-    if (panel.initialPosition != null) {
-      return panel.initialPosition!;
-    }
-
+  Offset find(Iterable<PanelGeometry> others, PanelConstraints constraints, Size panelSize) {
     if (others.isEmpty) {
       return constraints.origin;
     }
@@ -90,12 +82,8 @@ final class _FollowPanelPositioner implements PanelPositioner {
   });
 
   @override
-  Offset find(Panel panel, Iterable<PanelGeometry> others, PanelConstraints constraints) {
-    if (panel.initialPosition != null) {
-      return panel.initialPosition!;
-    }
-
-    final panelAnchor = panelAlignment.alongSize(panel.initialSize);
+  Offset find(Iterable<PanelGeometry> others, PanelConstraints constraints, Size panelSize) {
+    final panelAnchor = panelAlignment.alongSize(panelSize);
     final screenAnchor = screenAlignment.alongSize(constraints.maxSize);
 
     return screenAnchor - panelAnchor + offset;

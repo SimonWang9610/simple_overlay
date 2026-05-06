@@ -1,6 +1,5 @@
 import 'package:flutter/widgets.dart';
 import 'package:simple_overlay_kit/panels.dart';
-import 'package:simple_overlay_kit/src/panel/controllers/panel_positioner.dart';
 import 'package:simple_overlay_kit/src/panel/controllers/panel_shower.dart';
 
 base mixin PanelViewDelegateImpl on PanelController implements PanelViewDelegate {
@@ -81,6 +80,7 @@ base mixin PanelStateSetterMixin on PanelController {
     PanelConstraints? constraints,
     PanelMode? mode,
     PanelPositioner? positioner,
+    PanelSizer? sizer,
     PanelConfig? config,
   }) {
     if (constraints != null) {
@@ -98,6 +98,10 @@ base mixin PanelStateSetterMixin on PanelController {
     if (config != null) {
       _config = config;
     }
+
+    if (sizer != null) {
+      _sizer = sizer;
+    }
   }
 
   late PanelPositioner _positioner;
@@ -106,6 +110,14 @@ base mixin PanelStateSetterMixin on PanelController {
 
   set positioner(PanelPositioner newPositioner) {
     _positioner = newPositioner;
+  }
+
+  late PanelSizer _sizer;
+
+  PanelSizer get sizer => _sizer;
+
+  set sizer(PanelSizer newSizer) {
+    _sizer = newSizer;
   }
 }
 

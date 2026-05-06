@@ -1,6 +1,10 @@
 import 'package:flutter/widgets.dart';
 import 'package:simple_overlay_kit/panels.dart';
 
+/// An [InheritedWidget] that provides access to the [PanelController] for descendant widgets within a panel.
+///
+/// If the widget is a showing [Panel], it could use [PanelScope.of] to access the master [PanelController]
+/// to open new panels or switch modes.
 class PanelScope extends InheritedWidget {
   final PanelController controller;
 

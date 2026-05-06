@@ -11,3 +11,6 @@ export 'src/panel/model/config.dart';
 export 'src/panel/model/panel_geometry.dart';
 export 'src/panel/model/enums.dart';
 export 'src/panel/model/panel_view_state.dart';
+
+export 'src/panel/components/panel_positioner.dart';
+export 'src/panel/components/panel_sizer.dart';

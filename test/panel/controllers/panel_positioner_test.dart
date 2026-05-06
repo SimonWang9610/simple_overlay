@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:simple_overlay_kit/panels.dart';
-import 'package:simple_overlay_kit/src/panel/controllers/panel_positioner.dart';
+import 'package:simple_overlay_kit/src/panel/components/panel_positioner.dart';
 
 void main() {
   group('PanelPositioner', () {
@@ -20,7 +20,7 @@ void main() {
     test('origin positioner always returns constraints origin', () {
       final positioner = PanelPositioner.alwaysOrigin();
 
-      final result = positioner.find(panel, const <PanelGeometry>[], constraints);
+      final result = positioner.find(const <PanelGeometry>[], constraints, panel.initialSize!);
 
       expect(result, const Offset(30, 40));
     });
@@ -28,7 +28,7 @@ void main() {
     test('cascade returns origin when no other panels', () {
       final positioner = PanelPositioner.cascade(offset: const Offset(20, 20), margin: 20);
 
-      final result = positioner.find(panel, const <PanelGeometry>[], constraints);
+      final result = positioner.find(const <PanelGeometry>[], constraints, panel.initialSize!);
 
       expect(result, const Offset(30, 40));
     });
@@ -41,7 +41,7 @@ void main() {
         const PanelGeometry(origin: Offset(50, 60), size: Size(160, 120)),
       ];
 
-      final result = positioner.find(panel, others, constraints);
+      final result = positioner.find(others, constraints, panel.initialSize!);
 
       expect(result, const Offset(70, 80));
     });
@@ -53,7 +53,7 @@ void main() {
         offset: const Offset(-10, -15),
       );
 
-      final result = positioner.find(panel, const <PanelGeometry>[], constraints);
+      final result = positioner.find(const <PanelGeometry>[], constraints, panel.initialSize!);
 
       expect(result, const Offset(730, 540));
     });

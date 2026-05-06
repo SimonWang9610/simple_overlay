@@ -53,26 +53,6 @@ void main() {
       await tester.pumpAndSettle();
     });
 
-    testWidgets('open respects minimized initial mode and keeps panel hidden', (tester) async {
-      final context = await pumpPanelAppAndGetContext(tester);
-      final controller = PanelController(
-        initialConstraints: testConstraints(),
-      );
-
-      controller.open(
-        context,
-        _MinimizedPanel(id: 'min', text: 'Minimized Panel'),
-      );
-      await tester.pumpAndSettle();
-
-      expect(controller.hasPanels, isTrue);
-      expect(controller.isVisible('min'), isFalse);
-      expect(controller.focusedPanel, 'min');
-
-      controller.closeAll();
-      await tester.pumpAndSettle();
-    });
-
     testWidgets('minimize and restore update visibility and focused panel', (tester) async {
       final context = await pumpPanelAppAndGetContext(tester);
       final controller = PanelController(
@@ -245,32 +225,4 @@ void main() {
 
 PanelEntry _entryById(PanelController controller, Object id) {
   return controller.panels.firstWhere((entry) => entry.id == id);
-}
-
-final class _MinimizedPanel extends Panel {
-  final String text;
-
-  const _MinimizedPanel({
-    required super.id,
-    required this.text,
-  }) : super(
-          builder: _builder,
-          initialSize: const Size(160, 120),
-        );
-
-  static Widget _builder(BuildContext context, PanelViewController controller) {
-    return const SizedBox.shrink();
-  }
-
-  @override
-  PanelViewState getInitialState(Offset defaultOrigin, String defaultTitle) {
-    return PanelViewState(
-      title: text,
-      mode: PanelViewMode.minimized,
-      geometry: PanelGeometry(
-        origin: defaultOrigin,
-        size: initialSize,
-      ),
-    );
-  }
 }

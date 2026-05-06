@@ -35,6 +35,8 @@ class Panel {
   /// [PanelConstraints]  will still apply to the initial position,
   /// so if the provided position is out of bounds,
   /// it will be adjusted to fit within the constraints.
+  ///
+  /// If not provided, [PanelPositioner] will attempt to find the initial position
   final Offset? initialPosition;
 
   /// The initial size of the panel when it's first opened.
@@ -42,7 +44,9 @@ class Panel {
   /// [PanelConstraints] will still apply to the initial size,
   /// so if the provided size is out of bounds,
   /// it will be adjusted to fit within the constraints.
-  final Size initialSize;
+  ///
+  /// If not provided, [PanelSizer] will attempt to find the initial size.
+  final Size? initialSize;
 
   /// The builder function for the panel's content.
   ///
@@ -60,22 +64,11 @@ class Panel {
     required this.builder,
     this.title,
     this.initialPosition,
-    required this.initialSize,
+    this.initialSize,
     this.maintainState = true,
     this.addRepaintBoundary = true,
     this.useBuiltInView = true,
   });
-
-  PanelViewState getInitialState(Offset defaultOrigin, String defaultTitle) {
-    return PanelViewState(
-      title: title ?? defaultTitle,
-      mode: PanelViewMode.normal,
-      geometry: PanelGeometry(
-        origin: initialPosition ?? defaultOrigin,
-        size: initialSize,
-      ),
-    );
-  }
 }
 
 class PanelEntry {
