@@ -1,6 +1,6 @@
 import 'package:flutter/widgets.dart';
 import 'package:simple_overlay_kit/panels.dart';
-import 'package:simple_overlay_kit/src/panel/controllers/panel_shower.dart';
+import 'package:simple_overlay_kit/src/panel/components/panel_shower.dart';
 
 base mixin PanelViewDelegateImpl on PanelController implements PanelViewDelegate {
   @override

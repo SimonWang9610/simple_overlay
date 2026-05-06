@@ -1,9 +1,7 @@
 import 'package:flutter/widgets.dart';
 import 'package:simple_overlay_kit/panels.dart';
-import 'package:simple_overlay_kit/src/panel/components/panel_sizer.dart';
 import 'package:simple_overlay_kit/src/panel/controllers/mixins.dart';
-import 'package:simple_overlay_kit/src/panel/components/panel_positioner.dart';
-import 'package:simple_overlay_kit/src/panel/controllers/z_index_manager.dart';
+import 'package:simple_overlay_kit/src/panel/components/z_index_manager.dart';
 
 abstract base class PanelController extends ChangeNotifier {
   /// Whether this controller uses an overlay to display panels.
