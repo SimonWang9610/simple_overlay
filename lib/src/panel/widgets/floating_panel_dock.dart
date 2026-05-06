@@ -60,7 +60,7 @@ class _DefaultDockItem extends StatelessWidget {
       duration: const Duration(milliseconds: 300),
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
-        color: isFocused ? Colors.green : Colors.grey[300],
+        color: isFocused && controller.value.mode != PanelViewMode.minimized ? Colors.green : Colors.grey[300],
         borderRadius: BorderRadius.circular(4),
       ),
       child: ValueListenableBuilder(
